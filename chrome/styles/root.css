@@ -1,0 +1,72 @@
+/* ==================================== */
+/*   R O O T   S T Y L E S              */
+/* ==================================== */
+
+/* ------------------------------------ */
+/*   ROOT                               */
+/* ------------------------------------ */
+:root {
+	/* COLORS --------------------------- */
+	/* monotone */
+	--color-white:255 255 255;
+	--color-black:0 0 0;
+	/* note */
+	--color-note-0:#FFFEF8;
+	--color-note-1:#FBFAF6;
+	--color-note-2:#333333;
+	/* palette */
+	--color-orange-0:#FFECE4;
+	--color-orange-1:#FF824C;
+	--color-yellow-0:#FFF6E3;
+	--color-yellow-1:#FEC343;
+	--color-green-0:#F0F6F0;
+	--color-green-1:#9BC598;
+	--color-mint-0:#EDFBF7;
+	--color-mint-1:#87E3CD;
+	--color-blue-0:#E0F4F9;
+	--color-blue-1:#32B3D5;
+	--color-purple-0:#F8F4F9;
+	--color-purple-1:#CEB4D6;
+
+	/* FONT FAMILIES -------------------- */
+	--font-title:'Zen Kurenaido', sans-serif;
+	--font-body:'Zen Maru Gothic', sans-serif;
+	--font-tip:'Mynerve', sans-serif;
+
+	/* FONT SIZES ----------------------- */
+	--font-size-0:9px; /* tooltips */
+	--font-size-1:12px; /* secondary */
+	--font-size-2:14px; /* body */
+	--font-size-3:20px; /* heading */
+	--font-size-4:36px; /* title */
+
+	/* SEMANTICS ------------------------ */
+	/* default: text */
+	--text-primary:rgb(var(--color-black));
+	--text-secondary:rgb(var(--color-black) / 50%);
+	/* default: foreground */
+	--fg-orange:var(--color-orange-1);
+	--fg-yellow:var(--color-yellow-1);
+	--fg-green:var(--color-green-1);
+	--fg-mint:var(--color-mint-1);
+	--fg-blue:var(--color-blue-1);
+	--fg-purple:var(--color-purple-1);
+	/* default: background */
+	--bg-frame:rgb(var(--color-white));
+	--bg-overlay:rgb(var(--color-black) / 70%);
+	--bg-note-bar:var(--color-note-0);
+	--bg-note-light:var(--color-note-1);
+	--bg-note-dark:var(--color-note-2);	
+	--bg-orange:var(--color-orange-0);
+	--bg-yellow:var(--color-yellow-0);
+	--bg-green:var(--color-green-0);
+	--bg-mint:var(--color-mint-0);
+	--bg-blue:var(--color-blue-0);
+	--bg-purple:var(--color-purple-0);
+	/* default: borders */
+	--bd-primary:rgb(var(--color-black) / 30%);
+	--bd-secondary:rgb(var(--color-black) / 70%);
+	/* default: shadows */
+	--shadow-primary:0 2px 2px 0 rgb(var(--color-black) / 10%);
+	--shadow-secondary:-1px 2px 2px 0 rgb(var(--color-black) / 10%);
+}

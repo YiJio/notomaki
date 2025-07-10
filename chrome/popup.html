@@ -4,27 +4,63 @@
 <head>
 	<title>noto maki</title>
 	<meta charset="utf-8">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-		integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-		crossorigin="anonymous" referrerpolicy="no-referrer" />
-	<link rel="stylesheet" href="styles/root.css">
-	<link rel="stylesheet" href="styles/styles.css">
+	<link rel="stylesheet" href="index.css">
 </head>
 
 <body class="theme">
-	<div class="nm-container">
+	<div id="container" class="nm-container nm-frame">
 		<header class="nm-header">
-			<h1>noto maki / ノート 巻</h1>
+			<img class="nm-header__logo" src="assets/logo.png" />
+			<h1 id="title" class="nm-header__title">ノート 巻</h1>
 		</header>
 		<main class="nm-body">
+			<div class="nm-props">
+				<textarea id="list" class="nm-props__title"></textarea>
+				<div class="nm-props__nav">
+					<button class="nm-hover"><img src="assets/icon-left.png" /></button>
+					<span id="datetime" class="nm-props__span"></span>
+					<button class="nm-hover"><img src="assets/icon-right.png" /></button>
+				</div>
+			</div>
+			<div class="nm-folder">
+				<div class="nm-tabs">
+					<button class="nm-tab nm-tab--tool"><img src="assets/icon-up.png" /></button>
+					<div id="tabs" class="nm-tabs__list"></div>
+					<button id="add-tab" class="nm-tab nm-tab--tool"><img src="assets/icon-add.png" /></button>
+					<button class="nm-tab nm-tab--tool"><img src="assets/icon-down.png" /></button>
+				</div>
+				<div class="nm-note nm-bg-o">
+					<div id="todo" class="nm-notes"></div>
+				</div>
+				<div class="nm-flex nm-toolboxes">
+					<div class="nm-slot">
+						<div class="nm-toolbox">
+							<button><img src="assets/icon-line-solid@3x.png" /></button>
+							<button><img src="assets/icon-line-dot@3x.png" /></button>
+							<button><img src="assets/icon-grid-dot@3x.png" /></button>
+							<button><img src="assets/icon-grid-dash@3x.png" /></button>
+							<button><img src="assets/icon-grid-solid@3x.png" /></button>
+						</div>
+					</div>
+					<div class="nm-slot">
+						<div class="nm-toolbox">
+							<button class="nm-swatch nm-fg-o"></button>
+							<button class="nm-swatch nm-fg-y"></button>
+							<button class="nm-swatch nm-fg-g"></button>
+							<button class="nm-swatch nm-fg-m"></button>
+							<button class="nm-swatch nm-fg-b"></button>
+							<button class="nm-swatch nm-fg-p"></button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</main>
 		<footer class="nm-footer">
 			<div class="nm-footnote">© 2025 YiJio</div>
 		</footer>
 	</div>
 	<div id="loading" class="nm-floating"></div>
-	<script src="helpers.js"></script>
-	<script src="popup.js"></script>
+	<script src="test.js"></script>
 </body>
 
 </html>
