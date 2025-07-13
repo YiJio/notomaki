@@ -1,11 +1,7 @@
+// packages
 import { useEffect, useState } from 'react';
-
-interface Tab {
-  id: string;
-  name: string;
-	color: string;
-	order: number;
-}
+// types
+import { Tab } from '../components/tab-item';
 
 type GetTabHeightFn = (tabName: string) => number;
 
@@ -17,7 +13,7 @@ interface UsePaginationResult {
   sortedTabs: Tab[];
 }
 
-export function useTabPaginationWithActivePage(
+export function useTabPagination(
   unsortedTabs: Record<string, { name: string; color: string; order: number }>,
   listRef: React.RefObject<HTMLElement | null>,
   getTabHeight: GetTabHeightFn,

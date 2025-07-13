@@ -6,7 +6,7 @@ export const Header = () => {
 
 	return (
 		<header className='nm-header'>
-			<img className='nm-header__logo' src='assets/logo.png' />
+			<img className='nm-header__logo' src='assets/maki-1.png' />
 			<h1 onClick={() => setToggleEn(prev => !prev)} className={`nm-header__title${toggleEn ? ' nm-header__title--en' : ''}`}>
 				{toggleEn ? 'noto maki' : 'ノート 巻'}
 			</h1>

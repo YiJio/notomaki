@@ -1,11 +1,13 @@
 // packages
 import React, { useState } from 'react';
 // hooks
-import { TodoList, useTodoList } from '../contexts/todo.context';
+import { useTodoList } from '../contexts/todo.context';
+// types
+import { TodoList } from '../contexts/todo.context';
 // components
 import { TabPopup } from './popups/tab-popup';
 
-interface TabProps {
+export interface Tab {
 	id: string;
 	name: string;
 	color: string;
@@ -13,7 +15,7 @@ interface TabProps {
 }
 
 interface TabItemProps {
-	tabData: TabProps;
+	tabData: Tab;
 }
 
 export const TabItem = ({ tabData }: TabItemProps) => {

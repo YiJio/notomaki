@@ -7,7 +7,7 @@ import { ModalProvider } from './contexts/modal.context';
 // hooks
 import { useTodoList } from './contexts/todo.context';
 // components
-import { Header, Note, TabList, Toolbox } from './components';
+import { Copy, Header, NewNoteButton, Note, TabList, Toolbox } from './components';
 
 function App() {
   const [datetime, setDatetime] = useState<string>('');
@@ -63,13 +63,13 @@ function App() {
   }, [isLoading, error]);
 
   return (
-    <div className='nm-container nm-frame'>
+    <div className='nm-frame nm-container'>
       <ModalProvider>
         <Header />
         <main className='nm-body'>
           <div className='nm-props'>
-            <textarea className='nm-props__title'></textarea>
             <div className='nm-props__nav'>
+              <NewNoteButton />
               <button className='nm-hover'><img src='assets/icon-left.png' /></button>
               <span className='nm-props__span'>{datetime}</span>
               <button className='nm-hover'><img src='assets/icon-right.png' /></button>
@@ -84,9 +84,7 @@ function App() {
             </div>
           </div>
         </main>
-        <footer className='nm-footer'>
-          <div className='nm-footnote'>© 2025 YiJio</div>
-        </footer>
+        <Copy />
       </ModalProvider>
     </div>
   );

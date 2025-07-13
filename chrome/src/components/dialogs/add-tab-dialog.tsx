@@ -4,10 +4,8 @@ import { useModal } from '../../contexts/modal.context';
 import { useTodoList } from '../../contexts/todo.context';
 // components
 import { Swatch } from '../swatch';
-
 // constants
-const SWATCH_COLORS = ['o', 'y', 'g', 'm', 'b', 'p'];
-
+import { SWATCH_COLORS } from '../toolbox';
 
 export const AddTabDialog = () => {
 	const { closeModal } = useModal();
@@ -29,7 +27,7 @@ export const AddTabDialog = () => {
 			<div className='nm-dialog__body'>
 				<input className='nm-dialog__input' type='text' value={tabName} onChange={(e) => setTabName(e.target.value)} placeholder='e.g., Personal' />
 				<div className='nm-swatches'>
-					{SWATCH_COLORS.map((color, index) => (<Swatch key={index} color={color} activeColor={selectedColor} onChange={(newColor: string) => setSelectedColor(newColor)} />))}
+					{SWATCH_COLORS.map((color, index) => (<Swatch key={index} color={color.key} activeColor={selectedColor} onChange={(newColor: string) => setSelectedColor(newColor)} />))}
 				</div>
 			</div>
 			<footer className='nm-dialog__footer'>

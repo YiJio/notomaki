@@ -66,7 +66,7 @@
 	--mg-purple:var(--color-purple-1);
 	/* default: background */
 	--bg-frame:rgb(var(--color-white));
-	--bg-overlay:rgb(var(--color-black) / 70%);
+	--bg-overlay:rgb(var(--color-black) / 60%);
 	--bg-note-bar:var(--color-note-0);
 	--bg-note-light:var(--color-note-1);
 	--bg-note-dark:var(--color-note-2);	
@@ -79,6 +79,7 @@
 	/* default: borders */
 	--bd-primary:rgb(var(--color-black) / 30%);
 	--bd-secondary:rgb(var(--color-black) / 70%);
+	--bd-frame:var(--color-note-2);
 	/* default: shadows */
 	--shadow-primary:0 2px 2px 0 rgb(var(--color-black) / 10%);
 	--shadow-secondary:-1px 2px 2px 0 rgb(var(--color-black) / 10%);
