@@ -58,7 +58,7 @@ export const TabList = React.memo(() => {
 	const visibleTabs = getTabsForPage(currentPage);
 
 	return (
-		<div ref={listRef} className='nm-tabs'>
+		<div ref={listRef} className='nm-tabs nm-layer'>
 			<button onClick={() => handleChangePage(0)} className='nm-tab nm-tab--tool'>
 				<img src='assets/icon-up.png' />
 			</button>

@@ -8,10 +8,20 @@ import { ModalProvider } from './contexts/modal.context';
 import { useTodoList } from './contexts/todo.context';
 // components
 import { Copy, Header, NewNoteButton, Note, TabList, Toolbox } from './components';
+import { NOTE_TYPES } from './components/toolbox';
+
+function getFromIndex(array: any[], fieldCheck: string, value: any, returnField?: string | null) {
+	const index = array.findIndex((a) => a[fieldCheck] == value);
+	if (returnField) return array[index][returnField];
+	return array[index];
+}
+
 
 function App() {
   const [datetime, setDatetime] = useState<string>('');
-  const { setTodoList, isLoading, error } = useTodoList();
+  const { activeTab, activeList, todoList, setTodoList, isLoading, error } = useTodoList();
+  const activeNote = todoList?.[activeTab]?.lists?.[activeList]?.note;
+  const noteShort = getFromIndex(NOTE_TYPES, 'key', activeNote)?.short;
 
   function updateTime() {
     const now = new Date();
@@ -67,7 +77,7 @@ function App() {
       <ModalProvider>
         <Header />
         <main className='nm-body'>
-          <div className='nm-props'>
+          <div className='nm-props nm-layer'>
             <div className='nm-props__nav'>
               <NewNoteButton />
               <button className='nm-hover'><img src='assets/icon-left.png' /></button>
@@ -78,13 +88,14 @@ function App() {
           <div className='nm-folder'>
             <TabList />
             <Note />
-            <div className='nm-flex nm-toolboxes'>
+            <div className='nm-flex nm-toolboxes nm-layer'>
               <div className='nm-slot'><Toolbox type='default' /></div>
               <div className='nm-slot'><Toolbox type='swatches' /></div>
             </div>
           </div>
         </main>
         <Copy />
+        <div className={`nm-notebook nm-notebook--${noteShort}`} />
       </ModalProvider>
     </div>
   );

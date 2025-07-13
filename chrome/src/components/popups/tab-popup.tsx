@@ -6,6 +6,7 @@ import { useModal } from '../../contexts/modal.context';
 import { DeleteTabDialog } from '../dialogs/delete-tab-dialog';
 
 interface TabPopupProps {
+	y: number;
 	tabId: string;
 	tabName: string;
 	onRename: (name: string) => void;
@@ -13,7 +14,7 @@ interface TabPopupProps {
 	closePopup: () => void;
 }
 
-export const TabPopup = ({ tabId, tabName, onRename, onMove, closePopup }: TabPopupProps) => {
+export const TabPopup = ({ y, tabId, tabName, onRename, onMove, closePopup }: TabPopupProps) => {
 	const { openModal } = useModal();
 	const popupRef = useRef<HTMLDivElement>(null);
 	const [newTabName, setNewTabName] = useState<string>(tabName);
@@ -42,18 +43,18 @@ export const TabPopup = ({ tabId, tabName, onRename, onMove, closePopup }: TabPo
 	}
 
 	return (
-		<div ref={popupRef} className='nm-popup nm-frame'>
+		<div ref={popupRef} className='nm-popup nm-popup--tab nm-frame' style={{ top: (y - 180) + 'px' }}>
 			<input className='nm-popup__input' type='text' value={newTabName} onChange={(e) => setNewTabName(e.target.value)} placeholder='e.g., Personal' />
 			<button onClick={handleClickRename} className='nm-button nm-button--solid nm-hover'>Rename</button>
 			<button onClick={handleClickDelete} className='nm-button nm-button--danger-outline nm-hover'>Delete</button>
 			<hr />
-			<div>
-				<button onClick={() => handleMoveTab('up')}>
-					<img src='assets/icon-up.png' />
+			<div style={{ display:'flex', gap:'8px' }}>
+				<button onClick={() => handleMoveTab('up')} className=''>
+					<img style={{ filter:'invert(1)' }} src='assets/icon-up.png' />
 					Move up
 				</button>
-				<button onClick={() => handleMoveTab('down')} className='nm-button nm-button--danger-outline nm-hover'>
-					<img src='assets/icon-down.png' />
+				<button onClick={() => handleMoveTab('down')}>
+					<img style={{ filter:'invert(1)' }} src='assets/icon-down.png' />
 					Move down
 				</button>
 			</div>

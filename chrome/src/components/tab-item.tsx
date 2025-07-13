@@ -20,13 +20,13 @@ interface TabItemProps {
 
 export const TabItem = ({ tabData }: TabItemProps) => {
 	const [showPopup, setShowPopup] = useState(false);
-	//const [coords, setCoords] = useState({ x: 0, y: 0 });
+	const [coords, setCoords] = useState({ x: 0, y: 0 });
 	const { activeTab, todoList, setActiveTab, setActiveList, setTodoList, handleUpdate } = useTodoList();
 
 	const handleContextMenu = (e: React.MouseEvent) => {
 		e.preventDefault();
 		console.log(e);
-		//setCoords({ x: e.clientX, y: e.clientY });
+		setCoords({ x: e.clientX, y: e.clientY });
 		setShowPopup(true);
 	}
 
@@ -46,7 +46,7 @@ export const TabItem = ({ tabData }: TabItemProps) => {
 			<button onClick={() => setActiveTab(tabData.id)} onContextMenu={handleContextMenu} className={`nm-tab${activeTab === tabData.id ? ' nm-tab--active' : ''} nm-fg-${tabData.color}`}>
 				<span>{tabData.name}</span>
 			</button>
-			{showPopup && (<TabPopup tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} closePopup={() => setShowPopup(false)} onMove={handleMoveTab} />)}
+			{showPopup && (<TabPopup y={coords.y} tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} closePopup={() => setShowPopup(false)} onMove={handleMoveTab} />)}
 		</>
 	);
 }

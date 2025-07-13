@@ -36,9 +36,9 @@ export const Note = () => {
 	return (
 		<div className='nm-content'>
 			<div className={`nm-content__title nm-mg-${activeColor}`}>
-				<input className='nm-content__input' type='text' value={listName} onChange={(e) => setListName(e.target.value)} onBlur={handleRenameList} placeholder='Untitled note' />
+				<input className='nm-content__input nm-layer' type='text' value={listName} onChange={(e) => setListName(e.target.value)} onBlur={handleRenameList} placeholder='Untitled note' />
 				/
-				<strong>{todoList?.[activeTab]?.name}</strong>
+				<strong className='nm-layer'>{todoList?.[activeTab]?.name}</strong>
 			</div>
 			<div className={`nm-note nm-note--${noteShort} nm-bg-${activeColor}`}>
 				<div className='nm-notes'>
