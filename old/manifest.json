@@ -6,20 +6,14 @@
 	"author": "Yi Jiang",
 	"permissions": [
 		"storage",
-		"scripting",
-		"sidePanel"
+		"scripting"
 	],
 	"host_permissions": [
 		"<all_urls>"
 	],
 	"action": {
+		"default_popup": "popup.html",
 		"default_title": "noto maki"
-	},
-	"background": {
-		"service_worker": "background.js"
-	},
-	"side_panel": {
-		"default_path": "index.html"
 	},
 	"icons": {
 		"16": "icons/extension_icon16.png",

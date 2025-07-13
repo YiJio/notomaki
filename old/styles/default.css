@@ -1,0 +1,106 @@
+/* ==================================== */
+/*   D E F A U L T   S T Y L E S        */
+/* ==================================== */
+
+* { padding:0; margin:0; outline:0; border:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { position:relative; margin:0; padding:0; border:0; outline:0; font-family:var(--font-body); color:var(--text-primary); font-size:var(--font-size-2); }
+ul { list-style:none; }
+li {  }
+p { padding:0; margin:0; }
+/*input, textarea, option { width:100%; font-family:var(--font); font-size:11px; line-height:1; }*/
+input, textarea, button { background:none; font-family:var(--font-body); }
+input[type='checkbox'] { opacity:0; cursor:pointer; }
+textarea { font-size:var(--font-size-1); resize:none; }
+button { display:flex; align-items:center; justify-content:center; cursor:pointer; }
+
+.nm-hover { opacity:0.5; }
+.nm-hover:hover { opacity:1; }
+
+.nm-container { position:relative; width:400px; height:480px; padding:16px 16px 0 12px; }
+
+.nm-frame { border-radius:8px; border:1px solid var(--bd-primary); background:var(--bg-frame); }
+
+.nm-header { display:flex; align-items:center; justify-content:center; gap:16px; padding-bottom:4px; height:40px; }
+.nm-header__logo { width:35px; height:40px; }
+.nm-header__title { font-size:var(--font-size-4); font-family:var(--font-title); cursor:pointer; user-select:none; }
+.nm-header__title--en { font-family:var(--font-tip); }
+
+
+.nm-body { display:flex; flex-direction:column; }
+
+.nm-props { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:2px 0; }
+.nm-props__title { text-align:right; font-weight:600; height:20px; }
+.nm-props__nav { display:flex; gap:8px; }
+.nm-props__span { color:var(--text-secondary); cursor:default; user-select:none; }
+
+.nm-folder { position:relative; display:flex; }
+
+.nm-tabs { width:24px; padding:4px 0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.nm-tabs__list { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+
+.nm-tab { padding:8px 0; width:20px; min-height:48px; border-top-left-radius:8px; border-bottom-left-radius:8px; background:var(--bg-note-dark); opacity:0.5; }
+.nm-tab--active, .nm-tab:hover { width:24px; opacity:1; }
+.nm-tab--tool { min-height:32px; }
+.nm-tab span { font-weight:600; display:inline-block; white-space:nowrap; writing-mode:sideways-lr; background:none; color:rgb(var(--color-white)); }
+
+.nm-button { padding:4px 20px; font-size:var(--font-size-2); font-weight:600; border-radius:8px; border:1px solid transparent; color:var(--text-primary); }
+.nm-button--solid { background:var(--fg-yellow); color:rgb(var(--color-white)); }
+.nm-button--outline { border-color:var(--fg-yellow); background:rgb(var(--color-white)); }
+.nm-button--danger { background:var(--fg-orange); color:rgb(var(--color-white)); }
+.nm-button--danger-outline { border-color:var(--fg-orange); background:rgb(var(--color-white)); color:var(--fg-orange); }
+
+.nm-dialog { position:absolute; top:0; left:0; display:flex; width:100%; height:100%; background:var(--bg-overlay); display:flex; align-items:center; justify-content:center; }
+.nm-dialog__wrapper { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; }
+.nm-dialog__header { font-size:var(--font-size-3); font-weight:700; }
+.nm-dialog__input { width:200px; height:36px; padding:0 8px; border-radius:4px; border:1px solid var(--bd-primary); background:rgb(var(--color-white)); text-align:center; font-size:var(--font-size-2); font-weight:500; }
+.nm-dialog__footer { display:flex; gap:20px; }
+
+.nm-popup { position:absolute; width:200px; display:flex; flex-direction:column; gap:8px; padding:16px; }
+.nm-popup__input { width:100%; height:28px; padding:0 8px; border-radius:4px; border:1px solid var(--bd-primary); background:rgb(var(--color-white)); text-align:center; font-size:var(--font-size-2); }
+.nm-popup button { font-size:var(--font-size-1); letter-spacing:1px; }
+
+.nm-note { position:relative; padding:8px; width:348px; height:398px; display:flex; flex-direction:column; gap:4px; }
+.nm-note::before { position:absolute; top:0; left:0; width:100%; height:100%; content:''; background:url('../assets/bg-line-solid@2x.png') no-repeat; background-size:cover; }
+
+.nm-hidden { display:none !important; }
+
+.nm-toolboxes { position:absolute; top:12px; right:-16px; }
+.nm-toolbox { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:8px; border-radius:8px; background:var(--bg-note-bar); box-shadow:var(--shadow-secondary); }
+.nm-toolbox img { width:20px; height:20px; }
+
+.nm-check { position:relative; width:20px; height:20px; }
+.nm-check__box { position:absolute; top:0; left:0; width:100%; height:100%; background:url('../assets/unchecked.png'); z-index:0; }
+.nm-check__box--c { opacity:0.5; background:url('../assets/checked-check.png'); }
+.nm-check__box--x { opacity:0.5; background:url('../assets/checked-x.png'); }
+.nm-check input { position:relative; z-index:1; }
+
+.nm-swatches { display:flex; gap:8px; justify-content:center; padding-top:8px; }
+.nm-swatch { width:20px; height:20px; border-radius:4px; }
+.nm-swatch--toolbox { width:12px; height:12px; border-radius:2px; }
+.nm-swatch--active { outline:2px solid var(--bd-secondary); }
+
+.nm-notes { position:relative; display:flex; flex-direction:column; padding-right:16px; }
+
+.nm-item { display:flex; align-items:flex-start; gap:4px; }
+.nm-item__input { display:flex; flex:1; line-height:24px; }
+
+
+.nm-flex { display:flex; flex-direction:column; gap:8px; }
+.nm-slot { width:100%; display:flex; justify-content:flex-end; }
+
+.nm-fg-o { background:var(--fg-orange); }
+.nm-fg-y { background:var(--fg-yellow); }
+.nm-fg-g { background:var(--fg-green); }
+.nm-fg-m { background:var(--fg-mint); }
+.nm-fg-b { background:var(--fg-blue); }
+.nm-fg-p { background:var(--fg-purple); }
+
+.nm-bg-o { background:var(--bg-orange); }
+.nm-bg-y { background:var(--bg-yellow); }
+.nm-bg-g { background:var(--bg-green); }
+.nm-bg-m { background:var(--bg-mint); }
+.nm-bg-b { background:var(--bg-blue); }
+.nm-bg-p { background:var(--bg-purple); }
+
+.nm-strikethrough { text-decoration:line-through; color:var(--text-secondary); }
