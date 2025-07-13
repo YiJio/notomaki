@@ -2,7 +2,9 @@
 import { useEffect, useState } from 'react';
 // css
 import './index.css';
-// contexts
+// contexts/providers
+import { ModalProvider } from './contexts/modal.context';
+// hooks
 import { useTodoList } from './contexts/todo.context';
 // components
 import { Header, Note, TabList, Toolbox } from './components';
@@ -22,16 +24,18 @@ function App() {
   }
 
   function loadTodoList() {
-    chrome.storage.sync.get(['todoList'], function(result) {
+    chrome.storage.sync.get(['todoList'], function (result) {
       let todoList = result.todoList;
-      if(!todoList || Object.keys(todoList).length === 0) {
+      if (!todoList || Object.keys(todoList).length === 0) {
         todoList = {
           '1': {
             name: 'First Tab',
             color: 'o',
+            order: 0,
             lists: {
               '1': {
                 name: 'Untitled note #1',
+                note: 'line-solid',
                 items: [
                   { text: 'Item 1', completed: false, cursorPosition: 0 },
                 ]
@@ -45,7 +49,7 @@ function App() {
   }
 
   useEffect(() => {
-    const interval = setInterval(updateTime, 1000);  
+    const interval = setInterval(updateTime, 1000);
     return () => { clearInterval(interval); }
   }, []);
 
@@ -54,13 +58,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if(isLoading) { console.log('loading...') }
-    else if(error) { console.log('error', error); }
+    if (isLoading) { console.log('loading...') }
+    else if (error) { console.log('error', error); }
   }, [isLoading, error]);
 
   return (
-    <>
-      <div className='nm-container nm-frame'>
+    <div className='nm-container nm-frame'>
+      <ModalProvider>
         <Header />
         <main className='nm-body'>
           <div className='nm-props'>
@@ -83,8 +87,8 @@ function App() {
         <footer className='nm-footer'>
           <div className='nm-footnote'>© 2025 YiJio</div>
         </footer>
-      </div>
-    </>
+      </ModalProvider>
+    </div>
   );
 }
 

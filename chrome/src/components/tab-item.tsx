@@ -1,26 +1,25 @@
 // packages
 import React, { useState } from 'react';
-// contexts
-import { useTodoList } from '../contexts/todo.context';
+// hooks
+import { TodoList, useTodoList } from '../contexts/todo.context';
 // components
-import { RenamePopup } from './popups/rename-popup';
+import { TabPopup } from './popups/tab-popup';
 
 interface TabProps {
 	id: string;
 	name: string;
 	color: string;
+	order: number;
 }
 
 interface TabItemProps {
 	tabData: TabProps;
-	activeTab: string;
-	setActiveTab: (tab: string) => void;
 }
 
-export const TabItem = ({ tabData, activeTab, setActiveTab }: TabItemProps) => {
+export const TabItem = ({ tabData }: TabItemProps) => {
 	const [showPopup, setShowPopup] = useState(false);
 	//const [coords, setCoords] = useState({ x: 0, y: 0 });
-	const { handleUpdate } = useTodoList();
+	const { activeTab, todoList, setActiveTab, setActiveList, setTodoList, handleUpdate } = useTodoList();
 
 	const handleContextMenu = (e: React.MouseEvent) => {
 		e.preventDefault();
@@ -29,8 +28,15 @@ export const TabItem = ({ tabData, activeTab, setActiveTab }: TabItemProps) => {
 		setShowPopup(true);
 	}
 
-	const handleRename = (name: string) => {
+	const handleMoveTab = (direction: 'up' | 'down') => {
+		const updated = reorderTodoList(todoList, tabData.id, direction);
+		setTodoList(updated);
+	}
+
+	const handleRenameTab = (name: string) => {
 		handleUpdate('renameTab', { tabId: tabData.id, newName: name });
+		setActiveTab(tabData.id);
+		setActiveList('1');
 	}
 
 	return (
@@ -38,7 +44,34 @@ export const TabItem = ({ tabData, activeTab, setActiveTab }: TabItemProps) => {
 			<button onClick={() => setActiveTab(tabData.id)} onContextMenu={handleContextMenu} className={`nm-tab${activeTab === tabData.id ? ' nm-tab--active' : ''} nm-fg-${tabData.color}`}>
 				<span>{tabData.name}</span>
 			</button>
-			{showPopup && (<RenamePopup tabName={tabData.name} setTabName={handleRename} closePopup={() => setShowPopup(false)} />)}
+			{showPopup && (<TabPopup tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} closePopup={() => setShowPopup(false)} onMove={handleMoveTab} />)}
 		</>
 	);
+}
+
+function reorderTodoList(
+	todoList: TodoList,
+	tabId: string,
+	direction: 'up' | 'down'
+): TodoList {
+	const entries = Object.entries(todoList);
+	const sorted = entries.sort(([, a], [, b]) => a.order - b.order);
+	const currentIndex = sorted.findIndex(([id]) => id === tabId);
+	if (currentIndex === -1) return todoList;
+	let newIndex: number;
+	if (direction === 'up') {
+		newIndex = currentIndex === 0 ? sorted.length - 1 : currentIndex - 1;
+	} else {
+		newIndex = currentIndex === sorted.length - 1 ? 0 : currentIndex + 1;
+	}
+	const reordered = [...sorted];
+	const temp = reordered[currentIndex];
+	reordered[currentIndex] = reordered[newIndex];
+	reordered[newIndex] = temp;
+	const updated: TodoList = {};
+	reordered.forEach(([id, data], index) => {
+		updated[id] = { ...data, order: index };
+	});
+
+	return updated;
 }

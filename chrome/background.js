@@ -1,12 +1,6 @@
 chrome.action.onClicked.addListener(function (tab) {
-  //chrome.action.setBadgeText({text: 'On'});
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
 });
-/*chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.action === 'updateBadge') {
-    chrome.action.setBadgeText({text: request.badgeText});
-  }
-});*/
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   const { action, payload } = request;
   console.log('received message: ', request);
@@ -16,8 +10,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       chrome.storage.sync.get(['todoList']).then((result) => {
         sendResponse({ todoList: result.todoList || {} });
       }).catch((error) => {
-        console.error('Error getting todo list:', error);
-        sendResponse({ error: 'Failed to get todo list' });
+        console.error('Error getting todos:', error);
+        sendResponse({ error: 'Background response: Failed to get todos.' });
       });
       /*try {
         console.log('getting todo list...')
@@ -32,8 +26,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       chrome.storage.sync.set({ todoList: payload.todoList }).then(() => {
         sendResponse({ success: true });
       }).catch((error) => {
-        console.error('Error getting todo list:', error);
-        sendResponse({ error: 'Failed to set todo list' });
+        console.error('Error getting todos:', error);
+        sendResponse({ error: 'Background response: Failed to set todos.' });
       });
       /*try {
         console.log('setting todo list...', request.payload.todoList);
@@ -45,31 +39,74 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         sendResponse({ error: 'Failed to set todo list' });
       }*/
       return true;
+    case 'addTab':
+      chrome.storage.sync.get(['todoList']).then((result) => {
+        const updatedTodoList = result.todoList;
+        console.log('adding tab check todo', updatedTodoList)
+        if (updatedTodoList) {
+          const nextTabId = (Object.keys(updatedTodoList).length + 1).toString();
+          const newTabName = payload.tabName || `Tab #${nextTabId}`;
+          const newOrder = Object.keys(updatedTodoList).length;
+          updatedTodoList[nextTabId] = {
+            name: newTabName,
+            color: payload.color || 'o',
+            order: newOrder,
+            lists: {
+              '1': {
+                note: 'line-solid',
+                name: 'Untitled note #1',
+                items: [{ text: 'Item #1', completed: false, cursorPos: 0 }]
+              }
+            }
+          };
+          chrome.storage.sync.set({ todoList: updatedTodoList }).then(() => {
+            sendResponse({ todoList: updatedTodoList, success: true });
+          }).catch((error) => {
+            console.error('Error adding tab:', error);
+            sendResponse({ error: 'Background response: Failed to add tab.' });
+          });
+        }
+      }).catch((error) => {
+        console.error('Error getting todos to adding tab:', error);
+        sendResponse({ error: 'Background response: Failed to get todos and add tab.' });
+      });
+      return true;
     case 'renameTab':
       chrome.storage.sync.get(['todoList']).then((result) => {
-        const todoList = result.todoList;
-        if (todoList && todoList[tabId]) {
-          todoList[tabId].name = newName;
-          chrome.storage.sync.set({ todoList });
+        const updatedTodoList = result.todoList;
+        console.log('renaming tab check todo', updatedTodoList)
+        if (updatedTodoList && updatedTodoList[payload.tabId]) {
+          updatedTodoList[payload.tabId].name = payload.newName;
+          chrome.storage.sync.set({ todoList: updatedTodoList }).then(() => {
+            sendResponse({ todoList: updatedTodoList, success: true });
+          }).catch((error) => {
+            console.error('Error renaming tab:', error);
+            sendResponse({ error: 'Background response: Failed to rename tab.' });
+          });
         }
-        sendResponse({ success: true });
       }).catch((error) => {
-        console.error('Error getting renaming tab:', error);
-        sendResponse({ error: 'Failed to rename tab' });
+        console.error('Error getting todos to renaming tab:', error);
+        sendResponse({ error: 'Background: Failed to get todos and rename tab.' });
       });
-      /*try {
-        console.log('renaming tab...')
-        const { todoList } = await chrome.storage.sync.get((['todoList']));
-        if (todoList && todoList[tabId]) {
-          todoList[tabId].name = newName;
-          await chrome.storage.sync.set({ todoList });
-        }
-        sendResponse({ success: true });
-      } catch (error) {
-        console.error('Error getting renaming tab:', error);
-        sendResponse({ error: 'Failed to rename tab' });
-      }*/
       return true;
+      case 'renameList':
+        chrome.storage.sync.get(['todoList']).then((result) => {
+          const updatedTodoList = result.todoList;
+          console.log('renaming list check todo', updatedTodoList)
+          if (updatedTodoList && updatedTodoList[payload.tabId] && updatedTodoList[payload.tabId].lists && updatedTodoList[payload.tabId].lists[payload.listId]) {
+            updatedTodoList[payload.tabId].lists[payload.listId].name = payload.newName;
+            chrome.storage.sync.set({ todoList: updatedTodoList }).then(() => {
+              sendResponse({ todoList: updatedTodoList, success: true });
+            }).catch((error) => {
+              console.error('Error renaming list:', error);
+              sendResponse({ error: 'Background response: Failed to rename list.' });
+            });
+          }
+        }).catch((error) => {
+          console.error('Error getting todos to renaming list:', error);
+          sendResponse({ error: 'Background response: Failed to get todos and rename list.' });
+        });
+        return true;
     /*case 'changeColor':
       console.log('changing color...')
       await changeColor(payload.tabId, payload.newColor);
@@ -83,14 +120,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     default: return false;
   }
 });
-
-async function renameTab(tabId, newName) {
-  const { todoList } = await chrome.storage.sync.get((['todoList']));
-  if (todoList && todoList[tabId]) {
-    todoList[tabId].name = newName;
-    await chrome.storage.sync.set({ todoList });
-  }
-}
 
 async function changeColor(tabId, newColor) {
   const { todoList } = await chrome.storage.sync.get((['todoList']));

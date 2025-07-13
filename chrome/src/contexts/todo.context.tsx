@@ -7,13 +7,15 @@ interface TodoItem {
 	cursorPosition: number;
 }
 
-interface TodoList {
+export interface TodoList {
 	[tabId: string]: {
 		name: string;
 		color: string;
+		order: number;
 		lists: {
 			[listId: string]: {
 				name: string;
+				note: string;
 				items: TodoItem[];
 			};
 		};
@@ -21,24 +23,30 @@ interface TodoList {
 }
 
 interface TodoListContextType {
+	activeTab: string;
+	activeList: string;
 	todoList: TodoList;
+	setActiveTab: (tabId: string) => void;
+	setActiveList: (listId: string) => void;
 	setTodoList: (todoList: TodoList) => void;
 	handleUpdate: (action: string, payload: any) => void;
 	isLoading: boolean;
 	error: string | null | undefined;
 }
 
-const TodoListContext = createContext<TodoListContextType | undefined>(undefined);
+const TodoListContext = createContext<TodoListContextType | null | undefined>(undefined);
 
 export function useTodoList(): TodoListContextType {
 	const context = useContext(TodoListContext);
-	if (context === undefined) {
+	if (context === undefined || context === null) {
 		throw new Error('useTodoList must be used within a TodoListProvider');
 	}
 	return context;
 }
 
 export const TodoListProvider = ({ children }: { children: React.ReactNode }) => {
+	const [activeTab, setActiveTab] = useState<string>('1');
+	const [activeList, setActiveList] = useState<string>('1');
 	const [todoList, setTodoList] = useState<TodoList>({});
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null | undefined>(null);
@@ -52,9 +60,9 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 				});
 				console.log(response)
 				setTodoList(response.todoList);*/
-				chrome.runtime.sendMessage({ action: "getTodoList" }, (response) => {
+				chrome.runtime.sendMessage({ action: 'getTodoList' }, (response) => {
 					if (chrome.runtime.lastError) {
-						console.error("Error sending message:", chrome.runtime.lastError);
+						console.error('Error sending message:', chrome.runtime.lastError);
 					} else {
 						// Handle the response
 						console.log(response.todoList)
@@ -92,7 +100,7 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 				chrome.runtime.sendMessage({ action, payload }, resolve);
 			});
 			if (response.error) { setError(response.error); }
-			else { console.log(response); }
+			else { setTodoList(response.todoList) }
 		} catch (error) {
 			setError('Failed to update');
 		} finally {
@@ -101,7 +109,7 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 	}
 
 	return (
-		<TodoListContext.Provider value={{ todoList, setTodoList: handleSetTodoList, handleUpdate, isLoading, error }}>
+		<TodoListContext.Provider value={{ activeTab, activeList, todoList, setActiveTab, setActiveList, setTodoList: handleSetTodoList, handleUpdate, isLoading, error }}>
 			{children}
 		</TodoListContext.Provider>
 	);

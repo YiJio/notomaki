@@ -16,17 +16,23 @@
 	--color-note-2:#333333;
 	/* palette */
 	--color-orange-0:#FFECE4;
-	--color-orange-1:#FF824C;
+	--color-orange-1:#FFE0D2;
+	--color-orange-2:#FF824C;
 	--color-yellow-0:#FFF6E3;
-	--color-yellow-1:#FEC343;
+	--color-yellow-1:#FFF0D0;
+	--color-yellow-2:#FEC343;
 	--color-green-0:#F0F6F0;
-	--color-green-1:#9BC598;
+	--color-green-1:#E6F0E5;
+	--color-green-2:#9BC598;
 	--color-mint-0:#EDFBF7;
-	--color-mint-1:#87E3CD;
+	--color-mint-1:#E1F8F2;
+	--color-mint-2:#87E3CD;
 	--color-blue-0:#E0F4F9;
-	--color-blue-1:#32B3D5;
+	--color-blue-1:#CCECF4;
+	--color-blue-2:#32B3D5;
 	--color-purple-0:#F8F4F9;
-	--color-purple-1:#CEB4D6;
+	--color-purple-1:#F3ECF5;
+	--color-purple-2:#CEB4D6;
 
 	/* FONT FAMILIES -------------------- */
 	--font-title:'Zen Kurenaido', sans-serif;
@@ -45,12 +51,19 @@
 	--text-primary:rgb(var(--color-black));
 	--text-secondary:rgb(var(--color-black) / 50%);
 	/* default: foreground */
-	--fg-orange:var(--color-orange-1);
-	--fg-yellow:var(--color-yellow-1);
-	--fg-green:var(--color-green-1);
-	--fg-mint:var(--color-mint-1);
-	--fg-blue:var(--color-blue-1);
-	--fg-purple:var(--color-purple-1);
+	--fg-orange:var(--color-orange-2);
+	--fg-yellow:var(--color-yellow-2);
+	--fg-green:var(--color-green-2);
+	--fg-mint:var(--color-mint-2);
+	--fg-blue:var(--color-blue-2);
+	--fg-purple:var(--color-purple-2);
+	/* default: midground */
+	--mg-orange:var(--color-orange-1);
+	--mg-yellow:var(--color-yellow-1);
+	--mg-green:var(--color-green-1);
+	--mg-mint:var(--color-mint-1);
+	--mg-blue:var(--color-blue-1);
+	--mg-purple:var(--color-purple-1);
 	/* default: background */
 	--bg-frame:rgb(var(--color-white));
 	--bg-overlay:rgb(var(--color-black) / 70%);
