@@ -1,0 +1,297 @@
+// packages
+import React, { useEffect, useRef, useState } from 'react';
+import { nanoid } from 'nanoid';
+// types
+import { TodoItem } from '../contexts/todo.context';
+// hooks
+import { useTodoList } from '../contexts/todo.context';
+// components
+import { Editable, EditableLine } from './editable';
+import { SaveButton } from './buttons';
+
+interface EditorProps {
+	tabId: string;
+	listId: string;
+	items: TodoItem[];
+	onUpdateItems: (tabId: string, listId: string, items: TodoItem[]) => void;
+}
+
+export const Editor = ({ items, onUpdateItems }: EditorProps) => {
+	const { activeTab, activeList } = useTodoList();
+	const [lines, setLines] = useState<EditableLine[]>([]);
+	const editorRef = useRef<HTMLDivElement>(null);
+	const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const intervalRef = useRef<NodeJS.Timeout | null>(null);
+	const isSelectAll = useRef(false);
+	/*const { handleUpdate } = useTodoList();*/
+
+	const getVisibleText = (html: string) => {
+		const temp = document.createElement('div');
+		temp.innerHTML = html;
+		return temp.textContent || '';
+	};
+
+	const placeCursorAtOffset = (el: HTMLElement, offset: number) => {
+		const sel = window.getSelection();
+		const range = document.createRange();
+		const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+		let currentNode = walker.nextNode();
+		let currentOffset = offset;
+		while (currentNode) {
+			const len = currentNode.textContent?.length || 0;
+			if (currentOffset <= len) {
+				range.setStart(currentNode, currentOffset);
+				break;
+			}
+			currentOffset -= len;
+			currentNode = walker.nextNode();
+		}
+		if (!currentNode) {
+			el.focus();
+			range.selectNodeContents(el);
+			range.collapse(false);
+		}
+		sel?.removeAllRanges();
+		sel?.addRange(range);
+	};
+
+	const getCaretOffsetInLine = (el: HTMLElement) => {
+		const sel = window.getSelection();
+		if (!sel || sel.rangeCount === 0) return 0;
+		const range = sel.getRangeAt(0);
+		const preRange = range.cloneRange();
+		preRange.selectNodeContents(el);
+		preRange.setEnd(range.startContainer, range.startOffset);
+		return preRange.toString().length;
+	};
+
+	const handleInput = (id: string, html: string) => {
+		if (isSelectAll.current) {
+			isSelectAll.current = false;
+			setLines([{ id: nanoid(), html, completed: false, indent: 1 }]);
+		} else {
+			setLines((prev) => prev.map((line) => (line.id === id ? { ...line, html } : line)));
+		}
+	}
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, id: string) => {
+		const index = lines.findIndex(line => line.id === id);
+		const ref = lineRefs.current[id];
+		if (!ref) return;
+		const offset = getCaretOffsetInLine(ref);
+		if (isSelectAll.current && (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter' || e.key.length === 1)) {
+			e.preventDefault();
+			isSelectAll.current = false;
+			let newLine: EditableLine = { id: nanoid(), html: '', completed: false, indent: 1 };
+			if (e.key === 'Backspace' || e.key === 'Delete') {
+				setLines([newLine]);
+			} else if (e.key === 'Enter') {
+				const newLine0: EditableLine = { id: nanoid(), html: '', completed: false, indent: 1 };
+				setLines([newLine0, newLine]);
+			} else {
+				newLine.html = e.key;
+				setLines([newLine]);
+			}
+			requestAnimationFrame(() => {
+				const el = lineRefs.current[newLine.id];
+				if (el) placeCursorAtOffset(el, 1);
+			});
+			return;
+		}
+		if (e.key === 'Tab') {
+			if (offset === 0) {
+				e.preventDefault();
+				setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: Math.min(line.indent + 1, 5) } : line));
+			} else {
+				if (index < lines.length - 1) {
+					e.preventDefault();
+					const below = lineRefs.current[lines[index + 1].id];
+					if (below) { placeCursorAtOffset(below, 0); }
+				}
+			}
+			return;
+		}
+		if (e.key === 'Backspace' && offset === 0) {
+			if (index === 0) return;
+			const current = lines[index];
+			if (current.indent > 1) {
+				e.preventDefault();
+				setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: line.indent - 1 } : line));
+				return;
+			}
+			e.preventDefault();
+			const prevId = lines[index - 1].id;
+			const currentHTML = lines[index].html;
+			const prevHTML = lines[index - 1].html;
+			const prevVisibleText = getVisibleText(prevHTML);
+			const newHTML = prevHTML + currentHTML;
+			setLines(prev => {
+				const updated = [...prev];
+				updated[index - 1].html = newHTML;
+				updated.splice(index, 1);
+				return updated;
+			});
+			requestAnimationFrame(() => {
+				const el = lineRefs.current[prevId];
+				if (el) placeCursorAtOffset(el, prevVisibleText.length);
+			});
+		}
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			const range = document.getSelection()?.getRangeAt(0);
+			if (!range) return;
+			const beforeFragment = document.createRange();
+			beforeFragment.setStart(ref, 0);
+			beforeFragment.setEnd(range.startContainer, range.startOffset);
+			const afterFragment = document.createRange();
+			afterFragment.setStart(range.startContainer, range.startOffset);
+			afterFragment.setEnd(ref, ref.childNodes.length);
+			const container1 = document.createElement('div');
+			container1.appendChild(beforeFragment.cloneContents());
+			const container2 = document.createElement('div');
+			container2.appendChild(afterFragment.cloneContents());
+			const newLine: EditableLine = { id: nanoid(), html: container2.innerHTML || '', completed: false, indent: 1 };
+			setLines(prev => {
+				const updated = [...prev];
+				updated[index] = { ...updated[index], html: container1.innerHTML || '' };
+				updated.splice(index + 1, 0, newLine);
+				return updated;
+			});
+			requestAnimationFrame(() => {
+				const el = lineRefs.current[newLine.id];
+				if (el) placeCursorAtOffset(el, 0);
+			});
+		} else if (e.key === 'ArrowUp' && index > 0) {
+			e.preventDefault();
+			const above = lineRefs.current[lines[index - 1].id];
+			if (above) { placeCursorAtOffset(above, offset); }
+		} else if (e.key === 'ArrowDown' && index < lines.length - 1) {
+			e.preventDefault();
+			const below = lineRefs.current[lines[index + 1].id];
+			if (below) { placeCursorAtOffset(below, offset); }
+		}
+	};
+
+	const handlePaste = (id: string, clipboardHtml: string, clipboardText: string) => {
+		const index = lines.findIndex(line => line.id === id);
+		if (index === -1) return;
+		const items = clipboardText.split(/\r?\n|<li>|<\/li>/g).map(s => s.trim()).filter(s => s);
+		if (items.length <= 1) return;
+		console.log(clipboardHtml);
+		const newLines: EditableLine[] = items.map(text => ({ id: nanoid(), html: text, completed: false, indent: 1 }));
+		setLines(prev => {
+			const updated = [...prev];
+			updated.splice(index, 1, ...newLines);
+			return updated;
+		});
+		requestAnimationFrame(() => {
+			const el = lineRefs.current[newLines[newLines.length - 1].id];
+			if (el) placeCursorAtOffset(el, getVisibleText(newLines[newLines.length - 1].html).length);
+		});
+	};
+
+	const handleToggle = (id: string) => {
+		setLines(prev => prev.map(line =>
+			line.id === id ? { ...line, completed: !line.completed } : line
+		));
+	};
+
+	const handleSaveToStorage = (mode: string) => {
+		console.log('save called by', mode);
+		const updated: TodoItem[] = lines.map(line => ({
+			id: line.id,
+			text: line.html,
+			completed: line.completed,
+			indent: line.indent
+		}));
+		onUpdateItems(activeTab, activeList, updated);
+	}
+
+	useEffect(() => {
+		// save every 2 minutes if extension active
+		intervalRef.current = setInterval(() => {
+			if (document.visibilityState === 'visible') { handleSaveToStorage('interval'); }
+		}, 2 * 60 * 1000);
+		// save when clicking outside of editor!!! MUST
+		const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+			if (editorRef.current && !editorRef.current.contains(e.target as Node)) {
+				handleSaveToStorage('CALLING THIS FIRST!!!!!!!!!!!!!!!!!!!!!!');
+			}
+		}
+		// save when window closing and if hidden
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === 'hidden') { handleSaveToStorage('documenthidden'); }
+		}
+		window.addEventListener('beforeunload', () => handleSaveToStorage('windowunload'));
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+		document.addEventListener('mousedown', handleOutsideClick);
+		return () => {
+			if (intervalRef.current) clearInterval(intervalRef.current);
+			window.removeEventListener('beforeunload', () => handleSaveToStorage('windowunload'));
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+			document.removeEventListener('mousedown', handleOutsideClick);
+		}
+	}, [lines]);
+
+	useEffect(() => {
+		const handleSelectionChange = () => {
+			// deselect select all when deselecting by user
+			const sel = window.getSelection();
+			const container = document.querySelector('#editor');
+			if (!sel || !container || sel.rangeCount === 0) {
+				isSelectAll.current = false;
+				return;
+			}
+			const range = sel.getRangeAt(0);
+			//const isContainerSelected = range.startContainer === container && range.endContainer === container;
+			if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) { isSelectAll.current = false; }
+		}
+		const handleGlobalKeyDown = (e: KeyboardEvent) => {
+			if (e.ctrlKey && e.key.toLowerCase() === 'a') {
+				const activeEl = document.activeElement;
+				if (activeEl && Object.values(lineRefs.current).includes(activeEl as HTMLDivElement)) {
+					e.preventDefault();
+					const sel = window.getSelection();
+					sel?.removeAllRanges();
+					const range = document.createRange();
+					const container = document.querySelector('#editor');
+					if (container) {
+						range.selectNodeContents(container);
+						sel?.addRange(range);
+						isSelectAll.current = true;
+					}
+				}
+			}
+		}
+		document.addEventListener('keydown', handleGlobalKeyDown);
+		document.addEventListener('selectionchange', handleSelectionChange);
+		return () => {
+			document.removeEventListener('keydown', handleGlobalKeyDown);
+			document.removeEventListener('selectionchange', handleSelectionChange);
+		}
+	}, []);
+
+	useEffect(() => {
+		if (items) {
+			console.log('initial setting list', activeList, items)
+			const initial = items.map(item => ({
+				id: item.id,
+				html: item.text,
+				completed: item.completed,
+				indent: item.indent ?? 1,
+			}));
+			setLines(initial);
+		}
+	}, [items]);
+
+	return (
+		<>
+			<div ref={editorRef} id='editor' className='nm-notes'>
+				{lines.map((line) => (
+					<Editable key={line.id} id={line.id} html={line.html} completed={line.completed} indent={line.indent} onInput={handleInput} onKeyDown={handleKeyDown} onPaste={handlePaste} onToggle={handleToggle} setRef={el => (lineRefs.current[line.id] = el)} />
+				))}
+			</div>
+			<SaveButton onSave={() => handleSaveToStorage('button')} />
+		</>
+	);
+}

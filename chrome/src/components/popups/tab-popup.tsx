@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 // hooks
 import { useModal } from '../../contexts/modal.context';
 // components
-import { DeleteTabDialog } from '../dialogs/delete-tab-dialog';
+import { DeleteTabDialog } from '../dialogs';
 
 interface TabPopupProps {
 	y: number;

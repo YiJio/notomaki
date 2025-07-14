@@ -5,7 +5,7 @@ import { useTodoList } from '../contexts/todo.context';
 // types
 import { TodoList } from '../contexts/todo.context';
 // components
-import { TabPopup } from './popups/tab-popup';
+import { TabPopup } from './popups';
 
 export interface Tab {
 	id: string;
@@ -25,9 +25,13 @@ export const TabItem = ({ tabData }: TabItemProps) => {
 
 	const handleContextMenu = (e: React.MouseEvent) => {
 		e.preventDefault();
-		console.log(e);
 		setCoords({ x: e.clientX, y: e.clientY });
 		setShowPopup(true);
+	}
+
+	const handleClickTab = () => {
+		setActiveTab(tabData.id);
+		setActiveList('1');
 	}
 
 	const handleMoveTab = (direction: 'up' | 'down') => {
@@ -43,7 +47,7 @@ export const TabItem = ({ tabData }: TabItemProps) => {
 
 	return (
 		<>
-			<button onClick={() => setActiveTab(tabData.id)} onContextMenu={handleContextMenu} className={`nm-tab${activeTab === tabData.id ? ' nm-tab--active' : ''} nm-fg-${tabData.color}`}>
+			<button onClick={handleClickTab} onContextMenu={handleContextMenu} className={`nm-tab${activeTab === tabData.id ? ' nm-tab--active' : ''} nm-fg-${tabData.color}`}>
 				<span>{tabData.name}</span>
 			</button>
 			{showPopup && (<TabPopup y={coords.y} tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} closePopup={() => setShowPopup(false)} onMove={handleMoveTab} />)}

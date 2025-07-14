@@ -8,7 +8,7 @@ import { useTodoList } from '../contexts/todo.context';
 import { Tab } from './tab-item';
 // components
 import { TabItem } from './tab-item';
-import { AddTabDialog } from './dialogs/add-tab-dialog';
+import { AddTabDialog } from './dialogs';
 
 export const TabList = React.memo(() => {
 	const { activeTab, todoList } = useTodoList();
