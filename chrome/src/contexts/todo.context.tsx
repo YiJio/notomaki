@@ -58,7 +58,7 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 		setIsLoading(true);
 		const getTodoList = async () => {
 			try {
-				console.log('getting list from context')
+				//console.log('getting list from context')
 				chrome.runtime.sendMessage({ action: 'getTodoList' }, (response) => {
 					if (chrome.runtime.lastError) {
 						console.error('Error sending message:', chrome.runtime.lastError);
@@ -158,7 +158,7 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 	}
 
 	const handleSetTodoList = async (newTodoList: TodoList) => {
-		console.log('calling to save to storage');
+		//console.log('calling to save to storage');
 		setIsLoading(true);
 		try {
 			const response: any = await new Promise((resolve) => {
@@ -206,7 +206,6 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 					delete updated[payload.tabId];
 					const normalized = normalizeTabOrders(updated);
 					nextTabId = getFirstTabId(normalized);
-					console.log(nextTabId);
 					updated = normalized;
 					break;
 				case 'addList':

@@ -38,15 +38,15 @@ export const Note = () => {
 				}
 			}
 		};
-		console.log('items to update',items)
-		console.log('final update', updatedTodoList)
+		//console.log('items to update',items)
+		//console.log('final update', updatedTodoList)
 		setTodoList(updatedTodoList);
 	}
 
 	useEffect(() => {
 		if(activeTab && activeList) {
 			const newName: string = todoList?.[activeTab].lists[activeList].name;
-			console.log('note page changed to:', newName)
+			//console.log('note page changed to:', newName)
 			setListName(newName);
 		}
 	}, [activeTab, activeList]);

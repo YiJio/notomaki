@@ -177,7 +177,7 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 		if (index === -1) return;
 		const items = clipboardText.split(/\r?\n|<li>|<\/li>/g).map(s => s.trim()).filter(s => s);
 		if (items.length <= 1) return;
-		console.log(clipboardHtml);
+		//console.log(clipboardHtml);
 		const newLines: EditableLine[] = items.map(text => ({ id: nanoid(), html: text, completed: false, indent: 1 }));
 		setLines(prev => {
 			const updated = [...prev];
@@ -197,7 +197,7 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 	};
 
 	const handleSaveToStorage = (mode: string) => {
-		console.log('save called by', mode);
+		//console.log('save called by', mode);
 		const updated: TodoItem[] = lines.map(line => ({
 			id: line.id,
 			text: line.html,
@@ -273,7 +273,7 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 
 	useEffect(() => {
 		if (items) {
-			console.log('initial setting list', activeList, items)
+			//console.log('initial setting list', activeList, items)
 			const initial = items.map(item => ({
 				id: item.id,
 				html: item.text,

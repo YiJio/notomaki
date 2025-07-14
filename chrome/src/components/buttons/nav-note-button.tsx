@@ -12,7 +12,7 @@ export const NavNoteButton = ({ direction }: NavNoteButtonProps) => {
 
 	useEffect(() => {
 		if (todoList && activeTab) {
-			console.log(todoList[activeTab].lists);
+			//console.log(todoList[activeTab].lists);
 			setNumLists(Object.keys(todoList[activeTab].lists).length);
 		}
 	}, [todoList, activeTab]);
@@ -22,12 +22,12 @@ export const NavNoteButton = ({ direction }: NavNoteButtonProps) => {
 		let currentPage = parseInt(activeList) - 1;
 		let page = currentPage;
 		if (direction === 'left') {
-			console.log('current', currentPage);
+			//console.log('current', currentPage);
 			page = currentPage === 0 ? numLists - 1 : currentPage - 1;
-			console.log(page);
+			//console.log(page);
 		} else {
 			page = (currentPage + 1) % numLists;
-			console.log(page);
+			//console.log(page);
 		}
 		setActiveList((page + 1).toString());
 	}
