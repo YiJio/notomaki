@@ -1,5 +1,5 @@
 # noto maki ノート 巻
-![noto maki](old/icons/extension_icon128.png?raw=true "noto maki")
+![noto maki](chrome/public/icons/extension_icon128.png?raw=true "noto maki")
 
 A simple browser extension/add-on.
 

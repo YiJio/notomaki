@@ -10,12 +10,11 @@ interface DeleteTabDialogProps {
 
 export const DeleteTabDialog = ({ tabId, tabName }: DeleteTabDialogProps) => {
 	const { closeModal } = useModal();
-	const { todoList, setActiveList, handleUpdate } = useTodoList();
+	const { todoList, handleUpdate } = useTodoList();
 	const hasOnlyOneTab = Object.keys(todoList).length === 1;
 
 	const handleDeleteTab = () => {
-		handleUpdate('deleteTab', { tabId }); // handles setting active tab already
-		setActiveList('1');
+		handleUpdate('deleteTab', { tabId }); // handles setting active tab & list already
 		closeModal();
 	}
 
@@ -27,7 +26,8 @@ export const DeleteTabDialog = ({ tabId, tabName }: DeleteTabDialogProps) => {
 					{hasOnlyOneTab ? (<>
 						<strong>You cannot delete your only tab.</strong> Try adding a tab you really want and come back to delete this one to get it out of the way.
 					</>) : (<>
-						<strong>Be careful with this action.</strong> Deleting this tab will delete all to-do lists associated with it!!!</>)}
+						<strong>Be careful with this action.</strong> Deleting this tab will delete all notes associated with it!!!
+					</>)}
 				</center>
 			</div>
 			<footer style={{ flexDirection: 'column', gap: '8px' }} className='nm-dialog__footer'>

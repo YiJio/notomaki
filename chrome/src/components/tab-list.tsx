@@ -1,19 +1,19 @@
 // packages
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 // hooks
-import { useTabPagination } from '../hooks/use-tab-pagination';
 import { useModal } from '../contexts/modal.context';
+import { useTabPagination } from '../hooks/use-tab-pagination';
 import { useTodoList } from '../contexts/todo.context';
 // types
 import { Tab } from './tab-item';
+import { TodoList } from '../contexts/todo.context';
 // components
 import { TabItem } from './tab-item';
 import { AddTabDialog } from './dialogs';
 
-export const TabList = React.memo(() => {
-	const { activeTab, todoList } = useTodoList();
+export const TabList = () => {
+	const { activeTab, todoList, setTodoList } = useTodoList();
 	const { openModal } = useModal();
-	//const tabs: Tab[] = Object.entries(todoList).sort(([, a], [, b]) => a.order - b.order).map(([id, data]) => ({ id, name: data.name, color: data.color }));
 	const [currentPage, setCurrentPage] = useState(0);
 	const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -51,6 +51,29 @@ export const TabList = React.memo(() => {
 		}
 	}
 
+	const handleMoveTab = (tabId: string, direction: string) => {
+		//console.log('tab', tabId, 'should be moved', direction);
+		//console.log('dealing with', todoList);
+		const entries = Object.entries(todoList)
+			.map(([id, data]) => ({ id, ...data }))
+			.sort((a, b) => a.order - b.order);
+		const index = entries.findIndex(tab => tab.id === tabId);
+		//console.log('--------\nAttempt PRINTING', entries)
+		const maxIndex = entries.length - 1;
+		const newIndex = direction === 'up' ? index === 0 ? maxIndex : index - 1 : index === maxIndex ? 0 : index + 1;
+		// swap two tabs
+		const temp = entries[index].order;
+		entries[index].order = entries[newIndex].order;
+		entries[newIndex].order = temp;
+		// rebuild list with updated orders
+		const reordered: TodoList = {};
+		for (const tab of entries) {
+			reordered[tab.id] = { ...todoList[tab.id], order: tab.order };
+		}
+		//console.log('trying to reorder', reordered);
+		setTodoList(reordered);
+	}
+
 	useEffect(() => {
 		setCurrentPage(activePageIndex);
 	}, [activePageIndex]);
@@ -59,20 +82,23 @@ export const TabList = React.memo(() => {
 
 	return (
 		<div ref={listRef} className='nm-tabs nm-layer'>
-			<button onClick={() => handleChangePage(0)} className='nm-tab nm-tab--tool'>
+			<button onClick={() => handleChangePage(0)} className='nm-tab nm-tab--tool' disabled={tabsPerPage.length === 1}>
 				<img src='assets/icon-up.png' />
 			</button>
 			<div className='nm-tabs__list'>
 				{visibleTabs.map((tab) => (
-					<TabItem key={tab.id} tabData={tab} />
+					<TabItem key={tab.id} tabData={tab} onMove={handleMoveTab} currentPage={currentPage} />
 				))}
 			</div>
 			<button onClick={handleClickAdd} className='nm-tab nm-tab--tool'>
 				<img src='assets/icon-add.png' />
 			</button>
-			<button onClick={() => handleChangePage(1)} className='nm-tab nm-tab--tool'>
+			<button onClick={() => handleChangePage(1)} className='nm-tab nm-tab--tool' disabled={tabsPerPage.length === 1}>
 				<img src='assets/icon-down.png' />
+			</button>
+			<button className='nm-tab nm-tab--tool' disabled>
+				<span>{currentPage + 1}/{tabsPerPage.length}</span>
 			</button>
 		</div>
 	);
-});
+}

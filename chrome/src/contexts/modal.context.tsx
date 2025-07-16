@@ -18,7 +18,7 @@ const ModalContext = createContext<ModalContextType | null | undefined>(undefine
 export function useModal(): ModalContextType {
 	const context = useContext(ModalContext);
 	if (context === undefined || context === null) {
-		throw new Error('useTodoList must be used within a ModalProvider');
+		throw new Error('useModal must be used within a ModalProvider');
 	}
 	return context;
 }

@@ -1,6 +1,8 @@
 // packages
-import { nanoid } from 'nanoid';
 import { createContext, useContext, useState, useEffect } from 'react';
+import { nanoid } from 'nanoid';
+// utils
+import { generateListName } from '../utils';
 
 export interface TodoItem {
 	id: string;
@@ -19,6 +21,7 @@ export interface TodoList {
 			[listId: string]: {
 				name: string;
 				note: string;
+				heading: string;
 				items: TodoItem[];
 			};
 		};
@@ -28,11 +31,14 @@ export interface TodoList {
 interface TodoListContextType {
 	activeTab: string;
 	activeList: string;
+	tabPopupOpen: string;
 	todoList: TodoList;
 	setActiveTab: (tabId: string) => void;
 	setActiveList: (listId: string) => void;
+	setTabPopupOpen: (tabId: string) => void;
 	setTodoList: (todoList: TodoList) => void;
 	handleUpdate: (action: string, payload: any) => void;
+	getFirstListId: (tabId: string) => string;
 	isLoading: boolean;
 	error: string | null | undefined;
 }
@@ -50,9 +56,46 @@ export function useTodoList(): TodoListContextType {
 export const TodoListProvider = ({ children }: { children: React.ReactNode }) => {
 	const [activeTab, setActiveTab] = useState<string>('');
 	const [activeList, setActiveList] = useState<string>('1');
+	const [tabPopupOpen, setTabPopupOpen] = useState<string>('');
 	const [todoList, setTodoList] = useState<TodoList>({});
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null | undefined>(null);
+
+	function normalizeTabOrders(todoList: TodoList): TodoList {
+		const sorted = Object.entries(todoList).sort(([, a], [, b]) => a.order - b.order);
+		const normalized: TodoList = {};
+		sorted.forEach(([id, data], index) => {
+			normalized[id] = { ...data, order: index };
+		});
+		return normalized;
+	}
+
+	function getFirstTabId(todoList: TodoList): string {
+		const first = Object.entries(todoList).find(([, value]) => value.order === 0);
+		return first?.[0] ?? '';
+	}
+
+	function getFirstListId(tabId: string): string {
+		const sorted = Object.keys(todoList[tabId].lists).sort((a, b) => parseInt(a) - parseInt(b));
+		return sorted[0];
+	}
+
+	function getNewListId(tabId: string): string {
+		const maxId = Object.keys(todoList[tabId].lists).reduce((max, id) => {
+			const num = parseInt(id, 10);
+			return isNaN(num) ? max : Math.max(max, num);
+		}, 0);
+		return (maxId + 1).toString();
+	}
+
+	function getPrevListId(tabId: string, deletedId: string): string {
+		const sorted = Object.keys(todoList[tabId].lists).sort((a, b) => parseInt(a) - parseInt(b));
+		const index = sorted.indexOf(deletedId);
+		if(index === -1) return '';
+		if(sorted.length === 1) return '';
+		if(index > 0) return sorted[index - 1];
+		else { return sorted[1]; }
+	}
 
 	useEffect(() => {
 		setIsLoading(true);
@@ -68,14 +111,10 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 							const firstId = nanoid();
 							const newTodoList = {
 								[firstId]: {
-									name: 'First Tab',
-									color: 'o',
-									mark: 'x',
-									order: 0,
+									name: 'Guidelines', color: 'o', mark: 'x', order: 0,
 									lists: {
 										'1': {
-											name: 'Guide to using noto maki pt. 1',
-											note: 'grid-dot',
+											name: 'Guide to using noto maki pt. 1', note: 'grid-dot', heading: '',
 											items: [
 												{ id: nanoid(), text: 'Hello there.', completed: true, indent: 1 },
 												{ id: nanoid(), text: 'You can start by typing your to-do items here!', completed: false, indent: 1 },
@@ -83,14 +122,14 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 												{ id: nanoid(), text: 'I am at level 2!', completed: false, indent: 2 },
 												{ id: nanoid(), text: 'I am at level 3!', completed: false, indent: 3 },
 												{ id: nanoid(), text: 'I am at level 4!', completed: false, indent: 4 },
-												{ id: nanoid(), text: 'I am at level 5! Now press backspace to go back!', completed: false, indent: 5 },
+												{ id: nanoid(), text: 'I am at level 5! Press enter and you will go to next line with the previous indentation!', completed: false, indent: 5 },
+												{ id: nanoid(), text: 'You can press enter to reduce your indentation if you have no text on the current line.', completed: false, indent: 4 },
 												{ id: nanoid(), text: 'You can perform basic formatting to your text: <b>bolding</b> (ctrl+b/cmd+b), <i>italicizing</i> (ctrl+i/cmd+i), and <u>underlining</u> (ctrl+u/cmd+u).', completed: false, indent: 1 },
-												{ id: nanoid(), text: '<u><b>Please click the right arrow sign</b></u> above to go to the next page. There is a little guide there!', completed: false, indent: 1 },
+												{ id: nanoid(), text: '<u><b>Please click the right arrow sign</b></u> above to go to the next page. The little guide continues there!', completed: false, indent: 1 },
 											]
 										},
 										'2': {
-											name: 'Guide to using noto maki pt. 2',
-											note: 'grid-dot',
+											name: 'Guide to using noto maki pt. 2', note: 'grid-dot', heading: '',
 											items: [
 												{ id: nanoid(), text: '<u><b>Like making maki rolls, you need to be patient and follow basic guidelines:</b></u>', completed: false, indent: 1 },
 												{ id: nanoid(), text: '<b>Create a new tabby</b>: click on that + button on the left!', completed: false, indent: 2 },
@@ -109,14 +148,6 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 												{ id: nanoid(), text: 'Note: The extension auto saves it for you every 2 minutes, if you ever hide the side panel, or if you close the window.', completed: false, indent: 3 },
 												{ id: nanoid(), text: '<b>Mark your to-do items complete by checking the checkmark at the front of each line!</b>', completed: false, indent: 1 },
 												{ id: nanoid(), text: 'Happy to-do completing!', completed: true, indent: 1 },
-											]
-										},
-										'3': {
-											name: 'Untitled note #3',
-											note: 'grid-dot',
-											items: [
-												{ id: nanoid(), text: 'Item #1', completed: false, indent: 1 },
-												{ id: nanoid(), text: 'Item #2', completed: false, indent: 1 },
 											]
 										}
 									}
@@ -141,22 +172,6 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 		getTodoList();
 	}, []);
 
-
-
-	function normalizeTabOrders(todoList: TodoList): TodoList {
-		const sorted = Object.entries(todoList).sort(([, a], [, b]) => a.order - b.order);
-		const normalized: TodoList = {};
-		sorted.forEach(([id, data], index) => {
-			normalized[id] = { ...data, order: index };
-		});
-		return normalized;
-	}
-
-	function getFirstTabId(todoList: TodoList): string {
-		const first = Object.entries(todoList).find(([, value]) => value.order === 0);
-		return first?.[0] ?? '';
-	}
-
 	const handleSetTodoList = async (newTodoList: TodoList) => {
 		//console.log('calling to save to storage');
 		setIsLoading(true);
@@ -177,22 +192,18 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 		setIsLoading(true);
 		try {
 			let updated = { ...todoList };
-			let nextTabId = '';
-			let nextListId = '';
+			let activeTabId = '';
+			let activeListId = '';
 			switch (action) {
 				case 'addTab':
-					nextTabId = nanoid();
-					const newTabName = payload.tabName || `Tab #${nextTabId}`;
+					activeTabId = nanoid();
+					const newTabName = payload.tabName || `Tab #${activeTabId}`;
 					const newOrder = Object.keys(todoList).length;
-					updated[nextTabId] = {
-						name: newTabName,
-						color: payload.color || 'o',
-						mark: 'x',
-						order: newOrder,
+					updated[activeTabId] = {
+						name: newTabName, color: payload.color || 'o', mark: 'x', order: newOrder,
 						lists: {
 							'1': {
-								note: 'grid-dot',
-								name: 'Untitled note #1',
+								note: 'grid-dot', name: generateListName(), heading: '',
 								items: [{ id: nanoid(), text: 'Item #1', completed: false, indent: 1 }]
 							}
 						}
@@ -200,25 +211,31 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 					break;
 				case 'renameTab':
 					updated[payload.tabId].name = payload.newName;
-					nextTabId = payload.tabId;
+					activeTabId = payload.tabId;
 					break;
 				case 'deleteTab':
 					delete updated[payload.tabId];
 					const normalized = normalizeTabOrders(updated);
-					nextTabId = getFirstTabId(normalized);
+					activeTabId = getFirstTabId(normalized);
+					activeListId = getFirstListId(activeTabId);
 					updated = normalized;
 					break;
 				case 'addList':
-					nextListId = (Object.keys(todoList[payload.tabId]?.lists || {}).length + 1).toString();
-					const newListName = `Untitled note #${nextListId}`;
-					updated[payload.tabId].lists[nextListId] = {
-						name: newListName,
-						note: 'grid-dot',
+					activeListId = getNewListId(payload.tabId);
+					updated[payload.tabId].lists[activeListId] = {
+						name: generateListName(), note: 'grid-dot', heading: '',
 						items: [{ id: nanoid(), text: 'Item #1', completed: false, indent: 1 }]
 					};
 					break;
 				case 'renameList':
 					updated[payload.tabId].lists[payload.listId].name = payload.newName;
+					break;
+				case 'changeHeading':
+					updated[payload.tabId].lists[payload.listId].heading = payload.newName;
+					break;
+				case 'deleteList':
+					activeListId = getPrevListId(payload.tabId, payload.listId);
+					delete updated[payload.tabId].lists[payload.listId];
 					break;
 				case 'changeColor':
 					updated[payload.tabId].color = payload.newColor;
@@ -236,11 +253,8 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 			if (response.error) { setError(response.error); }
 			else {
 				setTodoList(updated);
-				if (nextTabId !== '') {
-					setActiveTab(nextTabId);
-				} else if(nextListId !== '') {
-					setActiveList(nextListId);
-				}
+				if (activeTabId !== '') { setActiveTab(activeTabId); }
+				if (activeListId !== '') { setActiveList(activeListId); }
 			}
 		} catch (error) {
 			setError('Failed to update');
@@ -250,7 +264,7 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 	}
 
 	return (
-		<TodoListContext.Provider value={{ activeTab, activeList, todoList, setActiveTab, setActiveList, setTodoList: handleSetTodoList, handleUpdate, isLoading, error }}>
+		<TodoListContext.Provider value={{ activeTab, activeList, tabPopupOpen, todoList, setActiveTab, setActiveList, setTabPopupOpen, setTodoList: handleSetTodoList, handleUpdate, getFirstListId, isLoading, error }}>
 			{children}
 		</TodoListContext.Provider>
 	);

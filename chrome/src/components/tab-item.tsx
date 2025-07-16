@@ -1,83 +1,73 @@
 // packages
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 // hooks
+import { usePopup } from '../contexts/popup.context';
 import { useTodoList } from '../contexts/todo.context';
-// types
-import { TodoList } from '../contexts/todo.context';
 // components
-import { TabPopup } from './popups';
+import { TabPopup } from './popups/tab-popup';
 
 export interface Tab {
 	id: string;
 	name: string;
 	color: string;
-	order: number;
+	mark?: string;
 }
 
 interface TabItemProps {
+	id?: string;
 	tabData: Tab;
+	currentPage: number;
+	onMove: (id: string, direction: string) => void;
 }
 
-export const TabItem = ({ tabData }: TabItemProps) => {
-	const [showPopup, setShowPopup] = useState(false);
-	const [coords, setCoords] = useState({ x: 0, y: 0 });
-	const { activeTab, todoList, setActiveTab, setActiveList, setTodoList, handleUpdate } = useTodoList();
+export const TabItem = ({ tabData, currentPage, onMove }: TabItemProps) => {
+	const { openPopup, closePopup } = usePopup();
+	const { activeTab, todoList, tabPopupOpen, setActiveTab, setActiveList, getFirstListId, setTabPopupOpen, handleUpdate } = useTodoList();
+	const tabRef = useRef<HTMLButtonElement | null>(null);
 
 	const handleContextMenu = (e: React.MouseEvent) => {
 		e.preventDefault();
-		setCoords({ x: e.clientX, y: e.clientY });
-		setShowPopup(true);
+		setActiveTab(tabData.id);
+		setActiveList(getFirstListId(tabData.id));
+		setTabPopupOpen(tabData.id);
+		//const x = e.clientX;
+		//const y = e.clientY;
+		if (tabRef.current) {
+			const node = e.target as HTMLElement;
+			const x = 40;
+			const y = node.getBoundingClientRect().top - 8;
+			openPopup(<TabPopup tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} onMove={(direction) => onMove(tabData.id, direction)} />, x, y, 'tab');
+		}
 	}
 
 	const handleClickTab = () => {
 		setActiveTab(tabData.id);
-		setActiveList('1');
-	}
-
-	const handleMoveTab = (direction: 'up' | 'down') => {
-		const updated = reorderTodoList(todoList, tabData.id, direction);
-		setTodoList(updated);
+		setActiveList(getFirstListId(tabData.id));
 	}
 
 	const handleRenameTab = (name: string) => {
 		handleUpdate('renameTab', { tabId: tabData.id, newName: name });
-		setActiveTab(tabData.id);
-		setActiveList('1');
+		//setActiveTab(tabData.id);
 	}
+
+	useEffect(() => {
+		if (tabRef.current && tabPopupOpen === tabData.id) {
+			// continue the popup when ordering happened in todolist
+			tabRef.current.oncontextmenu;
+			const node = tabRef.current;
+			const x = 40;
+			const y = node.getBoundingClientRect().top - 8;
+			closePopup();
+			//console.log("working on", tabData.id, tabData.name);
+			openPopup(<TabPopup tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} onMove={(direction) => onMove(tabData.id, direction)} />, x, y, 'tab');
+		}
+	}, [tabRef, currentPage, todoList]);
 
 	return (
 		<>
-			<button onClick={handleClickTab} onContextMenu={handleContextMenu} className={`nm-tab${activeTab === tabData.id ? ' nm-tab--active' : ''} nm-fg-${tabData.color}`}>
+			<button ref={tabRef} onClick={handleClickTab} onContextMenu={handleContextMenu} className={`nm-tab${activeTab === tabData.id ? ' nm-tab--active' : ''} nm-fg-${tabData.color}`}>
 				<span>{tabData.name}</span>
 			</button>
-			{showPopup && (<TabPopup y={coords.y} tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} closePopup={() => setShowPopup(false)} onMove={handleMoveTab} />)}
 		</>
 	);
-}
-
-function reorderTodoList(
-	todoList: TodoList,
-	tabId: string,
-	direction: 'up' | 'down'
-): TodoList {
-	const entries = Object.entries(todoList);
-	const sorted = entries.sort(([, a], [, b]) => a.order - b.order);
-	const currentIndex = sorted.findIndex(([id]) => id === tabId);
-	if (currentIndex === -1) return todoList;
-	let newIndex: number;
-	if (direction === 'up') {
-		newIndex = currentIndex === 0 ? sorted.length - 1 : currentIndex - 1;
-	} else {
-		newIndex = currentIndex === sorted.length - 1 ? 0 : currentIndex + 1;
-	}
-	const reordered = [...sorted];
-	const temp = reordered[currentIndex];
-	reordered[currentIndex] = reordered[newIndex];
-	reordered[newIndex] = temp;
-	const updated: TodoList = {};
-	reordered.forEach(([id, data], index) => {
-		updated[id] = { ...data, order: index };
-	});
-
-	return updated;
 }

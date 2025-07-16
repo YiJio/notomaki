@@ -6,7 +6,7 @@ import { useTodoList } from '../contexts/todo.context';
 import { Swatch } from './swatch';
 import { Tooltip } from './tooltip';
 // constants
-import { MARKS, NOTE_TYPES, SWATCH_COLORS } from './constants';
+import { MARKS, NOTE_TYPES, SWATCH_COLORS } from '../constants';
 
 interface ToolboxProps {
 	type: 'notes' | 'swatches' | 'marks';

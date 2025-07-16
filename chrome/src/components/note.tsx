@@ -1,65 +1,58 @@
 // packages
-import { useEffect, useState } from 'react';
-// types
-import { TodoItem } from '../contexts/todo.context';
+import { useEffect, useRef, useState } from 'react';
 // hooks
 import { useTodoList } from '../contexts/todo.context';
 // components
+import { EditHeading } from './edit-heading';
 import { Editor } from './editor';
-// constants
-import { NOTE_TYPES } from './constants';
-
-function getFromIndex(array: any[], fieldCheck: string, value: any, returnField?: string | null) {
-	const index = array.findIndex((a) => a[fieldCheck] == value);
-	if (returnField) return array[index][returnField];
-	return array[index];
-}
+import { NavNoteButton } from './buttons';
 
 export const Note = () => {
-	const { activeTab, activeList, todoList, setTodoList, handleUpdate } = useTodoList();
+	const { activeTab, activeList, todoList, handleUpdate } = useTodoList();
+	const textRef = useRef<HTMLTextAreaElement>(null);
 	const [listName, setListName] = useState<string>(todoList?.[activeTab]?.lists?.[activeList]?.name);
+	const [heading, setHeading] = useState<string>(todoList?.[activeTab]?.lists?.[activeList]?.heading);
 	const activeColor = todoList?.[activeTab]?.color;
-	const activeNote = todoList?.[activeTab]?.lists?.[activeList]?.note;
-	const noteShort = getFromIndex(NOTE_TYPES, 'key', activeNote)?.short;
 
 	const handleRenameList = () => {
 		handleUpdate('renameList', { tabId: activeTab, listId: activeList, newName: listName });
 	}
 
-	const handleUpdateItems = (tabId: string, listId: string, items: TodoItem[]) => {
-		const updatedTodoList = { ...todoList };
-		updatedTodoList[tabId] = {
-			...updatedTodoList[tabId],
-			lists: {
-				...updatedTodoList[tabId]?.lists,
-				[listId]: {
-					...updatedTodoList[tabId]?.lists[listId],
-					items: items
-				}
-			}
-		};
-		//console.log('items to update',items)
-		//console.log('final update', updatedTodoList)
-		setTodoList(updatedTodoList);
+	const handleChangeHeading = () => {
+		handleUpdate('changeHeading', { tabId: activeTab, listId: activeList, newName: heading });
 	}
 
 	useEffect(() => {
-		if(activeTab && activeList) {
-			const newName: string = todoList?.[activeTab].lists[activeList].name;
-			//console.log('note page changed to:', newName)
+		if (activeTab && activeList) {
+			const newName: string = todoList?.[activeTab].lists?.[activeList].name;
 			setListName(newName);
 		}
 	}, [activeTab, activeList]);
 
+	useEffect(() => {
+		if (textRef.current) {
+			textRef.current.style.height = '20px';
+			const scrollHeight = textRef.current.scrollHeight;
+			textRef.current.style.height = `${scrollHeight}px`;
+		}
+	}, [textRef.current, listName]);
+
 	return (
 		<div className='nm-content'>
-			<div className={`nm-content__title nm-mg-${activeColor}`}>
-				<input className='nm-content__input nm-layer' type='text' value={listName} onChange={(e) => setListName(e.target.value)} onBlur={handleRenameList} placeholder='Untitled note' />
-				/
-				<strong className='nm-content__tab nm-layer'>{todoList?.[activeTab]?.name}</strong>
-			</div>
-			<div className={`nm-note nm-note--${noteShort} nm-bg-${activeColor}`}>
-				<Editor tabId={activeTab} listId={activeList} items={todoList?.[activeTab]?.lists?.[activeList]?.items} onUpdateItems={handleUpdateItems} />
+			<header className={`nm-content__header nm-mg-${activeColor}`}>
+				<NavNoteButton direction='left' />
+				<div className='nm-content__title'>
+					<strong className='nm-content__tab nm-layer'>{todoList?.[activeTab]?.name}</strong>
+					/
+					<textarea ref={textRef} className='nm-content__input nm-layer' value={listName} onChange={(e) => setListName(e.target.value)} onBlur={handleRenameList} maxLength={100} placeholder='Untitled note' />
+				</div>
+				<NavNoteButton direction='right' />
+			</header>
+			<div className={`nm-content__body nm-bg-${activeColor}`}>
+				<div className='nm-note nm-layer'>
+					<EditHeading onChange={(value) => setHeading(value)} onBlur={handleChangeHeading} />
+					<Editor items={todoList?.[activeTab]?.lists?.[activeList]?.items} />
+				</div>
 			</div>
 		</div>
 	);

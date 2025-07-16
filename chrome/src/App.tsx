@@ -4,19 +4,16 @@ import { useEffect, useState } from 'react';
 import './index.css';
 // contexts/providers
 import { ModalProvider } from './contexts/modal.context';
+import { PopupProvider } from './contexts/popup.context';
 // hooks
 import { useTodoList } from './contexts/todo.context';
+// utils
+import { getFromIndex } from './utils';
 // components
 import { Copy, Header, Note, TabList, Toolbox } from './components';
-import { NavNoteButton, NewNoteButton } from './components/buttons';
+import { ActionsButton } from './components/buttons';
 // constants
-import { NOTE_TYPES } from './components/constants';
-
-function getFromIndex(array: any[], fieldCheck: string, value: any, returnField?: string | null) {
-	const index = array.findIndex((a) => a[fieldCheck] == value);
-	if (returnField) return array[index][returnField];
-	return array[index];
-}
+import { NOTE_TYPES } from './constants';
 
 function App() {
 	const [datetime, setDatetime] = useState<string>('');
@@ -47,28 +44,29 @@ function App() {
 	return (
 		<div className='nm-frame nm-container'>
 			<ModalProvider>
-				<Header />
-				<main className='nm-body'>
-					<div className='nm-props nm-layer'>
-						<div className='nm-props__nav'>
-							<NewNoteButton />
-							<NavNoteButton direction='left' />
-							<span className='nm-props__span'>{datetime}</span>
-							<NavNoteButton direction='right' />
+				<PopupProvider>
+					<Header />
+					<main className='nm-body'>
+						<div className='nm-actions nm-layer'>
+							<span className='nm-actions__span'>{datetime}</span>
+							<div className='nm-actions__nav'>
+								<ActionsButton type='add' />
+								<ActionsButton type='minus' />
+							</div>
 						</div>
-					</div>
-					<div className='nm-folder'>
-						<TabList />
-						<Note />
-						<div className='nm-flex nm-toolboxes nm-layer'>
-							<div className='nm-slot'><Toolbox type='notes' /></div>
-							<div className='nm-slot'><Toolbox type='swatches' /></div>
-							<div className='nm-slot'><Toolbox type='marks' /></div>
+						<div className='nm-folder'>
+							<TabList />
+							<Note />
+							<div className='nm-flex nm-toolboxes nm-layer'>
+								<div className='nm-slot'><Toolbox type='notes' /></div>
+								<div className='nm-slot'><Toolbox type='swatches' /></div>
+								<div className='nm-slot'><Toolbox type='marks' /></div>
+							</div>
 						</div>
-					</div>
-				</main>
-				<Copy />
-				<div className={`nm-notebook nm-notebook--${noteShort}`} />
+					</main>
+					<Copy />
+					<div className={`nm-notebook nm-notebook--${noteShort}`} />
+				</PopupProvider>
 			</ModalProvider>
 		</div>
 	);

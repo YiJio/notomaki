@@ -6,7 +6,7 @@ import { useTodoList } from '../../contexts/todo.context';
 // components
 import { Swatch } from '../swatch';
 // constants
-import { SWATCH_COLORS } from '../constants';
+import { SWATCH_COLORS } from '../../constants';
 
 export const AddTabDialog = () => {
 	const { closeModal } = useModal();

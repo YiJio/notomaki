@@ -12,28 +12,28 @@ export const NavNoteButton = ({ direction }: NavNoteButtonProps) => {
 
 	useEffect(() => {
 		if (todoList && activeTab) {
+			//console.log(todoList, activeTab);
 			//console.log(todoList[activeTab].lists);
 			setNumLists(Object.keys(todoList[activeTab].lists).length);
 		}
 	}, [todoList, activeTab]);
 
+	function getSorted(): string[] {
+		return Object.keys(todoList[activeTab].lists).sort((a, b) => parseInt(a) - parseInt(b));
+	}
+
 	const handleNav = () => {
-		// because lists start at 1 and not 0
-		let currentPage = parseInt(activeList) - 1;
-		let page = currentPage;
-		if (direction === 'left') {
-			//console.log('current', currentPage);
-			page = currentPage === 0 ? numLists - 1 : currentPage - 1;
-			//console.log(page);
-		} else {
-			page = (currentPage + 1) % numLists;
-			//console.log(page);
-		}
-		setActiveList((page + 1).toString());
+		const ids = getSorted();
+		const index = ids.indexOf(activeList);
+		let page = '1';
+		if(index === -1) page = ids[0];
+		if(direction === 'left') { page = ids[(index - 1 + ids.length) % ids.length]; }
+		else { page = ids[(index + 1) % ids.length]; }
+		setActiveList(page);
 	}
 
 	return (
-		<button onClick={handleNav} className='nm-hover' disabled={numLists === 1}>
+		<button onClick={handleNav} className='nm-hover nm-layer' disabled={numLists === 1}>
 			<img src={`assets/icon-${direction}.png`} />
 		</button>
 	);

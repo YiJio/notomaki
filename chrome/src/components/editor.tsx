@@ -10,14 +10,11 @@ import { Editable, EditableLine } from './editable';
 import { SaveButton } from './buttons';
 
 interface EditorProps {
-	tabId: string;
-	listId: string;
 	items: TodoItem[];
-	onUpdateItems: (tabId: string, listId: string, items: TodoItem[]) => void;
 }
 
-export const Editor = ({ items, onUpdateItems }: EditorProps) => {
-	const { activeTab, activeList } = useTodoList();
+export const Editor = ({ items }: EditorProps) => {
+	const { activeTab, activeList, todoList, setTodoList } = useTodoList();
 	const [lines, setLines] = useState<EditableLine[]>([]);
 	const editorRef = useRef<HTMLDivElement>(null);
 	const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -113,13 +110,12 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 		}
 		if (e.key === 'Backspace' && offset === 0) {
 			if (index === 0) return;
-			const current = lines[index];
-			if (current.indent > 1) {
-				e.preventDefault();
+			e.preventDefault();
+			//const current = lines[index];
+			/*if (current.indent > 1) {
 				setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: line.indent - 1 } : line));
 				return;
-			}
-			e.preventDefault();
+			}*/
 			const prevId = lines[index - 1].id;
 			const currentHTML = lines[index].html;
 			const prevHTML = lines[index - 1].html;
@@ -136,6 +132,24 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 				if (el) placeCursorAtOffset(el, prevVisibleText.length);
 			});
 		}
+		if (e.key === 'Delete') {
+			e.preventDefault();
+			const end = getVisibleText(lines[index].html).length;
+			const below = lineRefs.current[lines[index + 1].id];
+			if (offset === end && below) {
+				const newHtml = lines[index].html + lines[index + 1].html;
+				setLines(prev => {
+					const updated = [...prev];
+					updated[index].html = newHtml;
+					updated.splice(index + 1, 1);
+					return updated;
+				});
+				requestAnimationFrame(() => {
+					const el = lineRefs.current[lines[index].id];
+					if (el) placeCursorAtOffset(el, end);
+				});
+			}
+		}
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			const range = document.getSelection()?.getRangeAt(0);
@@ -150,15 +164,28 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 			container1.appendChild(beforeFragment.cloneContents());
 			const container2 = document.createElement('div');
 			container2.appendChild(afterFragment.cloneContents());
-			const newLine: EditableLine = { id: nanoid(), html: container2.innerHTML || '', completed: false, indent: 1 };
+			let makeNewLine = false;
+			// by default, take the indentation from current line
+			let indent = lines[index].indent;
+			if (container1.innerHTML === '') {
+				// if pressed enter while current line has no text, move indent back
+				indent = lines[index].indent - 1;
+				// if indent at level 1, pressing enter causes new line below
+				if (indent < 1) { makeNewLine = true; }
+			} else {
+				// if there is text in current line, make new line with current indent
+				makeNewLine = true;
+			}
+			let newLine: EditableLine = { id: nanoid(), html: container2.innerHTML || '', completed: false, indent: indent };
 			setLines(prev => {
 				const updated = [...prev];
-				updated[index] = { ...updated[index], html: container1.innerHTML || '' };
-				updated.splice(index + 1, 0, newLine);
+				updated[index] = { ...updated[index], html: container1.innerHTML || '', indent: indent };
+				if (makeNewLine) updated.splice(index + 1, 0, newLine);
 				return updated;
 			});
 			requestAnimationFrame(() => {
-				const el = lineRefs.current[newLine.id];
+				const id = makeNewLine ? newLine.id : lines[index].id;
+				const el = lineRefs.current[id];
 				if (el) placeCursorAtOffset(el, 0);
 			});
 		} else if (e.key === 'ArrowUp' && index > 0) {
@@ -177,7 +204,7 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 		if (index === -1) return;
 		const items = clipboardText.split(/\r?\n|<li>|<\/li>/g).map(s => s.trim()).filter(s => s);
 		if (items.length <= 1) return;
-		//console.log(clipboardHtml);
+		console.log(clipboardHtml);
 		const newLines: EditableLine[] = items.map(text => ({ id: nanoid(), html: text, completed: false, indent: 1 }));
 		setLines(prev => {
 			const updated = [...prev];
@@ -197,14 +224,17 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 	};
 
 	const handleSaveToStorage = (mode: string) => {
-		//console.log('save called by', mode);
+		console.log('save called by', mode);
+		//console.log('instorage,list is', todoList);
 		const updated: TodoItem[] = lines.map(line => ({
 			id: line.id,
 			text: line.html,
 			completed: line.completed,
 			indent: line.indent
 		}));
-		onUpdateItems(activeTab, activeList, updated);
+		const temp = todoList;
+		temp[activeTab].lists[activeList].items = updated;
+		setTodoList(temp);
 	}
 
 	useEffect(() => {
@@ -215,7 +245,7 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 		// save when clicking outside of editor!!! MUST
 		const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
 			if (editorRef.current && !editorRef.current.contains(e.target as Node)) {
-				handleSaveToStorage('CALLING THIS FIRST!!!!!!!!!!!!!!!!!!!!!!');
+				handleSaveToStorage('===FIRST: OUTSIDE CLICK===');
 			}
 		}
 		// save when window closing and if hidden
@@ -231,7 +261,7 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 			document.removeEventListener('visibilitychange', handleVisibilityChange);
 			document.removeEventListener('mousedown', handleOutsideClick);
 		}
-	}, [lines]);
+	}, [todoList, lines]);
 
 	useEffect(() => {
 		const handleSelectionChange = () => {
@@ -272,6 +302,10 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 	}, []);
 
 	useEffect(() => {
+		//console.log('is being updated?', todoList)
+	}, [todoList]);
+
+	useEffect(() => {
 		if (items) {
 			//console.log('initial setting list', activeList, items)
 			const initial = items.map(item => ({
@@ -286,11 +320,12 @@ export const Editor = ({ items, onUpdateItems }: EditorProps) => {
 
 	return (
 		<>
-			<div ref={editorRef} id='editor' className='nm-notes'>
+			<div ref={editorRef} id='editor' className='nm-note__list nm-layer'>
 				{lines.map((line) => (
 					<Editable key={line.id} id={line.id} html={line.html} completed={line.completed} indent={line.indent} onInput={handleInput} onKeyDown={handleKeyDown} onPaste={handlePaste} onToggle={handleToggle} setRef={el => (lineRefs.current[line.id] = el)} />
 				))}
 			</div>
+			<div className='nm-note__end' />
 			<SaveButton onSave={() => handleSaveToStorage('button')} />
 		</>
 	);

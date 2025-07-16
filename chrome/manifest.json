@@ -1,16 +1,12 @@
 {
 	"name": "noto maki",
 	"description": "Wouldn't it be easier to munch all your to-dos like maki rolls?",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"manifest_version": 3,
 	"author": "Yi Jiang",
 	"permissions": [
 		"storage",
-		"scripting",
 		"sidePanel"
-	],
-	"host_permissions": [
-		"<all_urls>"
 	],
 	"action": {
 		"default_title": "noto maki"

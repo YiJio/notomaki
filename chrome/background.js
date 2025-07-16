@@ -3,7 +3,7 @@ chrome.action.onClicked.addListener(function (tab) {
 });
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	const { action, payload } = request;
-	console.log('received message: ', request);
+	//console.log('received message: ', request);
 
 	switch (action) {
 		case 'getTodoList':
@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			}*/
 			return true;
 		case 'setTodoList':
-			console.log('setting to do list', payload.todoList)
+			//console.log('setting to do list', payload.todoList)
 			chrome.storage.sync.set({ todoList: payload.todoList }).then(() => {
 				sendResponse({ success: true });
 			}).catch((error) => {
