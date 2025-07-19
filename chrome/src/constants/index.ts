@@ -96,7 +96,7 @@ export const PATCHES_TAB = {
 			]
 		},
 		'2': {
-			name: '1.1.1', note: 'grid-dot', heading: 'Patch 1.1.1 notes', updated: '07/??/2025, 12:00 AM',
+			name: '1.1.1', note: 'grid-dot', heading: 'Patch 1.1.1 notes', updated: '07/19/2025, 12:00 AM',
 			items: [
 				{ id: nanoid(), text: 'Editing fixes', completed: false, indent: 1 },
 				{ id: nanoid(), text: 'Removed select all lines', completed: false, indent: 2 },

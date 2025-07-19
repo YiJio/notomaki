@@ -1,5 +1,5 @@
 // packages
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { nanoid } from 'nanoid';
 // types
 import { TodoItem } from '../contexts/todo.context';
@@ -14,12 +14,12 @@ interface EditorProps {
 }
 
 export const Editor = ({ items }: EditorProps) => {
-	const { activeTab, activeList, todoList, setTodoList } = useTodoList();
-	const [lines, setLines] = useState<EditableLine[]>([]);
+	const { activeTab, activeList, lines, setLines, todoList, setHasUnsaved, handleSaveToStorage } = useTodoList();
+	//const [lines, setLines] = useState<EditableLine[]>([]);
 	const editorRef = useRef<HTMLDivElement>(null);
 	const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
-	const intervalRef = useRef<NodeJS.Timeout | null>(null);
-	const saveRef = useRef<HTMLDivElement>(null);
+	//const intervalRef = useRef<NodeJS.Timeout | null>(null);
+	//const saveRef = useRef<HTMLDivElement>(null);
 	const isSelectAll = useRef(false);
 	/*const { handleUpdate } = useTodoList();*/
 
@@ -68,7 +68,25 @@ export const Editor = ({ items }: EditorProps) => {
 			isSelectAll.current = false;
 			setLines([{ id: nanoid(), html, completed: false, indent: 1 }]);
 		} else {
-			setLines((prev) => prev.map((line) => (line.id === id ? { ...line, html } : line)));
+			const prev = [...lines];
+			const index = prev.findIndex(line => line.id === id);
+			prev[index].html = html;
+			setLines(prev);
+			//setLines((prev) => prev.map((line) => (line.id === id ? { ...line, html } : line)));
+		}
+		setHasUnsaved(true);
+	}
+
+	const handleBlur = (id: string, html: string) => {
+		// check previous from storage
+		const items = todoList?.[activeTab]?.lists?.[activeList]?.items;
+		const index = items.findIndex(item => item.id === id);
+		// if new line, make new line and save
+		// or if changes have been made to the line, save it
+		if(index === -1 || items[index]?.text !== html) {
+			console.log(lines);
+			setHasUnsaved(false);
+			handleSaveToStorage('blur');
 		}
 	}
 
@@ -79,6 +97,7 @@ export const Editor = ({ items }: EditorProps) => {
 		const selection = document.getSelection();
 		if (!selection || selection.rangeCount === 0) return;
 		const offset = getCaretOffsetInLine(ref);
+		setHasUnsaved(true);
 		/*if (isSelectAll.current && (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter' || e.key.length === 1)) {
 			e.preventDefault();
 			isSelectAll.current = false;
@@ -103,7 +122,9 @@ export const Editor = ({ items }: EditorProps) => {
 				// make indentation only when at front of line
 				e.preventDefault();
 				console.log('current indent:', lines[index].indent)
-				setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: Math.min(line.indent + 1, 5) } : line));
+				const prev = [...lines];
+				prev[index].indent = Math.min(prev[index].indent + 1, 5);
+				//setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: Math.min(line.indent + 1, 5) } : line));
 			} else {
 				// if not at offset 0, tab to next line if next line exists
 				if (index < lines.length - 1) {
@@ -135,12 +156,16 @@ export const Editor = ({ items }: EditorProps) => {
 				const prevHTML = lines[index - 1].html;
 				const prevVisibleText = getVisibleText(prevHTML);
 				const newHTML = prevHTML + currentHTML;
-				setLines(prev => {
+				/*setLines(prev => {
 					const updated = [...prev];
 					updated[index - 1].html = newHTML;
 					updated.splice(index, 1);
 					return updated;
-				});
+				});*/
+				const updated = [...lines];
+				updated[index - 1].html = newHTML;
+				updated.splice(index, 1);
+				setLines(updated);
 				requestAnimationFrame(() => {
 					const el = lineRefs.current[prevId];
 					if (el) placeCursorAtOffset(el, prevVisibleText.length);
@@ -153,12 +178,16 @@ export const Editor = ({ items }: EditorProps) => {
 			if (offset === end && below) {
 				e.preventDefault();
 				const newHtml = lines[index].html + lines[index + 1].html;
-				setLines(prev => {
+				/*setLines(prev => {
 					const updated = [...prev];
 					updated[index].html = newHtml;
 					updated.splice(index + 1, 1);
 					return updated;
-				});
+				});*/
+				const updated = [...lines];
+				updated[index].html = newHtml;
+				updated.splice(index + 1, 1);
+				setLines(updated)
 				requestAnimationFrame(() => {
 					const el = lineRefs.current[lines[index].id];
 					if (el) placeCursorAtOffset(el, end);
@@ -202,12 +231,16 @@ export const Editor = ({ items }: EditorProps) => {
 				makeNewLine = true;
 			}
 			let newLine: EditableLine = { id: nanoid(), html: container2.innerHTML || '', completed: false, indent: indent };
-			setLines(prev => {
+			/*setLines(prev => {
 				const updated = [...prev];
 				updated[index] = { ...updated[index], html: container1.innerHTML || '', indent: indent };
 				if (makeNewLine) updated.splice(index + 1, 0, newLine);
 				return updated;
-			});
+			});*/
+			const updated = [...lines];
+			updated[index] = { ...updated[index], html: container1.innerHTML || '', indent: indent };
+			if (makeNewLine) updated.splice(index + 1, 0, newLine);
+			setLines(updated);
 			requestAnimationFrame(() => {
 				const id = makeNewLine ? newLine.id : lines[index].id;
 				const el = lineRefs.current[id];
@@ -221,13 +254,13 @@ export const Editor = ({ items }: EditorProps) => {
 			e.preventDefault();
 			const below = lineRefs.current[lines[index + 1].id];
 			if (below) { placeCursorAtOffset(below, offset); }
-		} else if(e.key === 'ArrowLeft' && offset === 0) {
+		} else if (e.key === 'ArrowLeft' && offset === 0) {
 			e.preventDefault();
 			const above = lineRefs.current[lines[index - 1].id];
 			if (above) { placeCursorAtOffset(above, getVisibleText(lines[index - 1].html).length); }
-		} else if(e.key === 'ArrowRight' && offset === getVisibleText(lines[index].html).length) {
+		} else if (e.key === 'ArrowRight' && offset === getVisibleText(lines[index].html).length) {
 			const below = lineRefs.current[lines[index + 1].id];
-			if(below) { placeCursorAtOffset(below, 0);	}
+			if (below) { placeCursorAtOffset(below, 0); }
 		}
 	};
 
@@ -259,6 +292,7 @@ export const Editor = ({ items }: EditorProps) => {
 		updatedLines[index] = { ...current, html: linesToInsert[0], };
 		const newLines: EditableLine[] = linesToInsert.slice(1).map((line) => ({ id: nanoid(), html: line, completed: false, indent: 1, order: 0 }));
 		updatedLines.splice(index + 1, 0, ...newLines);
+		setHasUnsaved(true);
 		setLines(updatedLines);
 		requestAnimationFrame(() => {
 			const el = lineRefs.current[newLines[newLines.length - 1].id];
@@ -267,12 +301,16 @@ export const Editor = ({ items }: EditorProps) => {
 	};
 
 	const handleToggle = (id: string) => {
-		setLines(prev => prev.map(line =>
+		setHasUnsaved(true);
+		/*setLines(prev => prev.map(line =>
 			line.id === id ? { ...line, completed: !line.completed } : line
-		));
+		));*/
+		const prev = [...lines];		
+		const index = prev.findIndex(line => line.id === id);
+		prev[index].completed = !prev[id].completed;
 	};
 
-	const handleSaveToStorage = (mode: string) => {
+	/*const handleSaveToStorage = (mode: string) => {
 		console.log('save called by', mode);
 		//console.log('instorage,list is', todoList);
 		if (mode === 'interval') {
@@ -291,17 +329,18 @@ export const Editor = ({ items }: EditorProps) => {
 		const temp = todoList;
 		temp[activeTab].lists[activeList].items = updated;
 		setTodoList(temp);
-	}
+		setHasUnsaved(false);
+	}*/
 
 	useEffect(() => {
 		// save every 2 minutes if extension active
-		intervalRef.current = setInterval(() => {
+		/*intervalRef.current = setInterval(() => {
 			if (document.visibilityState === 'visible') { handleSaveToStorage('interval'); }
-		}, 2 * 60 * 1000);
+		}, 2 * 60 * 1000);*/
 		// save when clicking outside of editor!!! MUST
 		const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
 			if (editorRef.current && !editorRef.current.contains(e.target as Node)) {
-				handleSaveToStorage('===FIRST: OUTSIDE CLICK===');
+				//handleSaveToStorage('===FIRST: OUTSIDE CLICK===');
 			}
 		}
 		// save when window closing and if hidden
@@ -312,7 +351,7 @@ export const Editor = ({ items }: EditorProps) => {
 		document.addEventListener('visibilitychange', handleVisibilityChange);
 		document.addEventListener('mousedown', handleOutsideClick);
 		return () => {
-			if (intervalRef.current) clearInterval(intervalRef.current);
+			//if (intervalRef.current) clearInterval(intervalRef.current);
 			window.removeEventListener('beforeunload', () => handleSaveToStorage('windowunload'));
 			document.removeEventListener('visibilitychange', handleVisibilityChange);
 			document.removeEventListener('mousedown', handleOutsideClick);
@@ -381,7 +420,7 @@ export const Editor = ({ items }: EditorProps) => {
 		<>
 			<div ref={editorRef} id='editor' className='nm-note__list nm-layer'>
 				{lines.map((line) => (
-					<Editable key={line.id} id={line.id} html={line.html} completed={line.completed} indent={line.indent} onInput={handleInput} onKeyDown={handleKeyDown} onPaste={handlePaste} onToggle={handleToggle} setRef={el => (lineRefs.current[line.id] = el)} />
+					<Editable key={line.id} id={line.id} html={line.html} completed={line.completed} indent={line.indent} onInput={handleInput} onBlur={handleBlur} onKeyDown={handleKeyDown} onPaste={handlePaste} onToggle={handleToggle} setRef={el => (lineRefs.current[line.id] = el)} />
 				))}
 			</div>
 			<div className='nm-note__end' />

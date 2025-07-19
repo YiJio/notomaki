@@ -49,7 +49,7 @@ function App() {
 					<main className='nm-body'>
 						<div className='nm-actions nm-layer'>
 							<span className='nm-actions__span'>{datetime}</span>
-							<div className='nm-actions__nav'>
+							<div className='nm-actions__tools'>
 								<ActionsButton type='add' />
 								<ActionsButton type='minus' />
 							</div>

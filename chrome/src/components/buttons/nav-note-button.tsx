@@ -1,3 +1,4 @@
+// packages
 import { useEffect, useState } from 'react';
 // hooks
 import { useTodoList } from '../../contexts/todo.context';
@@ -7,7 +8,7 @@ interface NavNoteButtonProps {
 }
 
 export const NavNoteButton = ({ direction }: NavNoteButtonProps) => {
-	const { activeTab, activeList, todoList, setActiveList } = useTodoList();
+	const { activeTab, activeList, setActiveList, hasUnsaved, todoList, handleSaveToStorage } = useTodoList();
 	const [numLists, setNumLists] = useState(0);
 
 	useEffect(() => {
@@ -23,13 +24,16 @@ export const NavNoteButton = ({ direction }: NavNoteButtonProps) => {
 	}
 
 	const handleNav = () => {
-		const ids = getSorted();
-		const index = ids.indexOf(activeList);
-		let page = '1';
-		if(index === -1) page = ids[0];
-		if(direction === 'left') { page = ids[(index - 1 + ids.length) % ids.length]; }
-		else { page = ids[(index + 1) % ids.length]; }
-		setActiveList(page);
+		if (hasUnsaved) { handleSaveToStorage('list change'); }
+		setTimeout(() => {
+			const ids = getSorted();
+			const index = ids.indexOf(activeList);
+			let page = '1';
+			if (index === -1) page = ids[0];
+			if (direction === 'left') { page = ids[(index - 1 + ids.length) % ids.length]; }
+			else { page = ids[(index + 1) % ids.length]; }
+			setActiveList(page);
+		}, 100);
 	}
 
 	return (

@@ -22,32 +22,37 @@ interface TabItemProps {
 
 export const TabItem = ({ tabData, currentPage, onMove }: TabItemProps) => {
 	const { openPopup, closePopup } = usePopup();
-	const { activeTab, todoList, tabPopupOpen, setActiveTab, setActiveList, getFirstListId, setTabPopupOpen, handleUpdate } = useTodoList();
+	const { activeTab, setActiveTab, setActiveList, tabPopupOpen, setTabPopupOpen, hasUnsaved, todoList, getFirstListId, handleSaveToStorage, handleUpdate } = useTodoList();
 	const tabRef = useRef<HTMLButtonElement | null>(null);
 
 	const handleContextMenu = (e: React.MouseEvent) => {
 		e.preventDefault();
-		setActiveTab(tabData.id);
-		setActiveList(getFirstListId(tabData.id));
-		setTabPopupOpen(tabData.id);
-		//const x = e.clientX;
-		//const y = e.clientY;
-		if (tabRef.current) {
-			const node = e.target as HTMLElement;
-			const x = 40;
-			const y = node.getBoundingClientRect().top - 8;
-			openPopup(<TabPopup tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} onMove={(direction) => onMove(tabData.id, direction)} />, x, y, 'tab');
-		}
+		if (hasUnsaved) { handleSaveToStorage('tab contextmenu'); }
+		setTimeout(() => {
+			setActiveTab(tabData.id);
+			setActiveList(getFirstListId(tabData.id));
+			setTabPopupOpen(tabData.id);
+			//const x = e.clientX;
+			//const y = e.clientY;
+			if (tabRef.current) {
+				const node = e.target as HTMLElement;
+				const x = 40;
+				const y = node.getBoundingClientRect().top - 8;
+				openPopup(<TabPopup tabId={tabData.id} tabName={tabData.name} onRename={handleRenameTab} onMove={(direction) => onMove(tabData.id, direction)} />, x, y, 'tab');
+			}
+		}, 100);
 	}
 
 	const handleClickTab = () => {
-		setActiveTab(tabData.id);
-		setActiveList(getFirstListId(tabData.id));
+		if (hasUnsaved) { handleSaveToStorage('tab change'); }
+		setTimeout(() => {
+			setActiveTab(tabData.id);
+			setActiveList(getFirstListId(tabData.id));
+		}, 200);
 	}
 
 	const handleRenameTab = (name: string) => {
 		handleUpdate('renameTab', { tabId: tabData.id, newName: name });
-		//setActiveTab(tabData.id);
 	}
 
 	useEffect(() => {

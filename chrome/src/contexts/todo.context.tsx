@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 // utils
 import { generateListName } from '../utils';
 import { GUIDELINES_TAB, PATCHES_TAB } from '../constants';
+import { EditableLine } from '../components/editable';
 
 export interface TodoItem {
 	id: string;
@@ -35,12 +36,15 @@ interface TodoListContextType {
 	activeList: string;
 	tabPopupOpen: string;
 	hasUnsaved: boolean;
+	lines: EditableLine[];
 	todoList: TodoList;
 	setActiveTab: (tabId: string) => void;
 	setActiveList: (listId: string) => void;
 	setTabPopupOpen: (tabId: string) => void;
 	setHasUnsaved: (status: boolean) => void;
+	setLines: (lines: EditableLine[]) => void;
 	setTodoList: (todoList: TodoList) => void;
+	handleSaveToStorage: (mode: string) => void;
 	handleUpdate: (action: string, payload: any) => void;
 	getFirstListId: (tabId: string) => string;
 	isLoading: boolean;
@@ -62,6 +66,7 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 	const [activeList, setActiveList] = useState<string>('1');
 	const [tabPopupOpen, setTabPopupOpen] = useState<string>('');
 	const [hasUnsaved, setHasUnsaved] = useState(false);
+	const [lines, setLines] = useState<EditableLine[]>([]);
 	const [todoList, setTodoList] = useState<TodoList>({});
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null | undefined>(null);
@@ -165,6 +170,23 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 		getTodoList();
 	}, []);
 
+	const handleSaveToStorage = (mode: string) => {
+		console.log('save called by', mode);
+		console.log('now lines', lines);
+		const updated: TodoItem[] = lines.map(line => ({
+			id: line.id,
+			text: line.html,
+			completed: line.completed,
+			indent: line.indent
+		}));
+		const temp = { ...todoList };
+		temp[activeTab].lists[activeList].items = updated;
+		console.log('now todos?', temp)
+		setTodoList(temp);
+		handleSetTodoList(temp);
+		setHasUnsaved(false);
+	}
+
 	const handleSetTodoList = async (newTodoList: TodoList) => {
 		//console.log('calling to save to storage');
 		setIsLoading(true);
@@ -257,7 +279,7 @@ export const TodoListProvider = ({ children }: { children: React.ReactNode }) =>
 	}
 
 	return (
-		<TodoListContext.Provider value={{ activeTab, setActiveTab, activeList, setActiveList, tabPopupOpen, setTabPopupOpen, hasUnsaved, setHasUnsaved, todoList, setTodoList: handleSetTodoList, handleUpdate, getFirstListId, isLoading, error }}>
+		<TodoListContext.Provider value={{ activeTab, setActiveTab, activeList, setActiveList, tabPopupOpen, setTabPopupOpen, hasUnsaved, setHasUnsaved, lines, setLines, todoList, setTodoList: handleSetTodoList, handleSaveToStorage, handleUpdate, getFirstListId, isLoading, error }}>
 			{children}
 		</TodoListContext.Provider>
 	);

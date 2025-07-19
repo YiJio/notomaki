@@ -6,6 +6,7 @@ import { useTodoList } from '../contexts/todo.context';
 import { EditHeading } from './edit-heading';
 import { Editor } from './editor';
 import { NavNoteButton } from './buttons';
+import { NoteMenuButton } from './buttons/note-menu-button';
 
 export const Note = () => {
 	const { activeTab, activeList, todoList, handleUpdate } = useTodoList();
@@ -41,6 +42,7 @@ export const Note = () => {
 		<div className='nm-content'>
 			<header className={`nm-content__header nm-mg-${activeColor}`}>
 				<NavNoteButton direction='left' />
+				<NoteMenuButton />
 				<div className='nm-content__title'>
 					<strong className='nm-content__tab nm-layer'>{todoList?.[activeTab]?.name}</strong>
 					/
@@ -50,6 +52,7 @@ export const Note = () => {
 			</header>
 			<div className={`nm-content__body nm-bg-${activeColor}`}>
 				<div className='nm-note nm-layer'>
+					<div className='nm-note__updated'>Last updated: {todoList?.[activeTab]?.lists?.[activeList].updated}</div>
 					<EditHeading defaultValue={todoList?.[activeTab]?.lists?.[activeList].heading} onChange={(value) => setHeading(value)} onBlur={handleChangeHeading} />
 					<Editor items={todoList?.[activeTab]?.lists?.[activeList]?.items} />
 				</div>

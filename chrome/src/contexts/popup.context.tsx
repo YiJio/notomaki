@@ -81,7 +81,7 @@ const PopupPortal: React.FC = () => {
 	if (!popupProps.isOpen || !popupProps.children) return null;
 
 	return (
-		<div ref={popupRef} className={`nm-popup nm-popup--${popupProps.name} nm-frame`} style={{ left: popupProps.x, top: popupProps.y }}>
+		<div ref={popupRef} className={`nm-popup nm-frame nm-popup--${popupProps.name}`} style={{ left: popupProps.x, top: popupProps.y }}>
 			{popupProps.children}
 		</div>
 	);

@@ -17,13 +17,14 @@ interface EditableProps {
 	indent: number;
 	setRef: (el: HTMLDivElement | null) => void;
 	onInput: (id: string, html: string) => void;
+	onBlur: (id: string, html:string) => void;
 	onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>, id: string) => void;
 	onPaste: (e: React.ClipboardEvent<HTMLDivElement>, id: string) => void;
 	onToggle: (id: string) => void;
 }
 
 
-export const Editable = ({ id, html, completed, indent, setRef, onInput, onKeyDown, onPaste, onToggle }: EditableProps) => {
+export const Editable = ({ id, html, completed, indent, setRef, onInput, onBlur, onKeyDown, onPaste, onToggle }: EditableProps) => {
 	const localRef = useRef<HTMLDivElement>(null);
 	const { activeTab, todoList } = useTodoList();
 	const mark = todoList?.[activeTab]?.mark;
@@ -50,7 +51,7 @@ export const Editable = ({ id, html, completed, indent, setRef, onInput, onKeyDo
 				<div className={`nm-check__box${completed ? markInBox : ''}`} />
 				<input type='checkbox' checked={completed} onChange={() => onToggle(id)} />
 			</div>
-			<div ref={localRef} className={`nm-item__input${completed ? ' nm-strikethrough' : ''}`} contentEditable suppressContentEditableWarning onInput={(e) => onInput(id, e.currentTarget.innerHTML)} onKeyDown={(e) => onKeyDown(e, id)} onPaste={(e) => onPaste(e, id)} />
+			<div ref={localRef} className={`nm-item__input${completed ? ' nm-strikethrough' : ''}`} contentEditable suppressContentEditableWarning onInput={(e) => onInput(id, e.currentTarget.innerHTML)} onBlur={(e) => onBlur(id, e.currentTarget.innerHTML)} onKeyDown={(e) => onKeyDown(e, id)} onPaste={(e) => onPaste(e, id)} />
 		</div>
 	);
 }
