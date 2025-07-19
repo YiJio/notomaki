@@ -42,7 +42,7 @@ button:hover:is(:disabled) { cursor:not-allowed; }
 
 .nm-folder { position:relative; display:flex; height:100%; }
 
-.nm-tabs { width:24px; height:80%; padding:4px 0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; background:rgb(var(--color-white)); }
+.nm-tabs { width:24px; height:85%; padding:4px 0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; background:rgb(var(--color-white)); }
 .nm-tabs__list { position:relative; display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
 
 .nm-tab { padding:8px 0; width:20px; min-height:48px; max-height:148px; border-top-left-radius:8px; border-bottom-left-radius:8px; background:var(--bg-note-dark); opacity:0.5; }

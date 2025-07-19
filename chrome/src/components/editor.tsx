@@ -19,6 +19,7 @@ export const Editor = ({ items }: EditorProps) => {
 	const editorRef = useRef<HTMLDivElement>(null);
 	const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
+	const saveRef = useRef<HTMLDivElement>(null);
 	const isSelectAll = useRef(false);
 	/*const { handleUpdate } = useTodoList();*/
 
@@ -75,8 +76,10 @@ export const Editor = ({ items }: EditorProps) => {
 		const index = lines.findIndex(line => line.id === id);
 		const ref = lineRefs.current[id];
 		if (!ref) return;
+		const selection = document.getSelection();
+		if (!selection || selection.rangeCount === 0) return;
 		const offset = getCaretOffsetInLine(ref);
-		if (isSelectAll.current && (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter' || e.key.length === 1)) {
+		/*if (isSelectAll.current && (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Enter' || e.key.length === 1)) {
 			e.preventDefault();
 			isSelectAll.current = false;
 			let newLine: EditableLine = { id: nanoid(), html: '', completed: false, indent: 1 };
@@ -94,12 +97,15 @@ export const Editor = ({ items }: EditorProps) => {
 				if (el) placeCursorAtOffset(el, 1);
 			});
 			return;
-		}
+		}*/
 		if (e.key === 'Tab') {
 			if (offset === 0) {
+				// make indentation only when at front of line
 				e.preventDefault();
+				console.log('current indent:', lines[index].indent)
 				setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: Math.min(line.indent + 1, 5) } : line));
 			} else {
+				// if not at offset 0, tab to next line if next line exists
 				if (index < lines.length - 1) {
 					e.preventDefault();
 					const below = lineRefs.current[lines[index + 1].id];
@@ -108,35 +114,44 @@ export const Editor = ({ items }: EditorProps) => {
 			}
 			return;
 		}
-		if (e.key === 'Backspace' && offset === 0) {
+		if (e.key === 'Backspace') {
 			if (index === 0) return;
-			e.preventDefault();
-			//const current = lines[index];
-			/*if (current.indent > 1) {
-				setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: line.indent - 1 } : line));
+			if (!selection.isCollapsed && selection.toString()) {
+				e.preventDefault();
+				const updated = [...lines];
+				updated[index].html = '';
+				setLines(updated);
 				return;
-			}*/
-			const prevId = lines[index - 1].id;
-			const currentHTML = lines[index].html;
-			const prevHTML = lines[index - 1].html;
-			const prevVisibleText = getVisibleText(prevHTML);
-			const newHTML = prevHTML + currentHTML;
-			setLines(prev => {
-				const updated = [...prev];
-				updated[index - 1].html = newHTML;
-				updated.splice(index, 1);
-				return updated;
-			});
-			requestAnimationFrame(() => {
-				const el = lineRefs.current[prevId];
-				if (el) placeCursorAtOffset(el, prevVisibleText.length);
-			});
+			}
+			if (selection.anchorOffset === 0 && index > 0) {
+				e.preventDefault();
+				//const current = lines[index];
+				/*if (current.indent > 1) {
+					setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: line.indent - 1 } : line));
+					return;
+				}*/
+				const prevId = lines[index - 1].id;
+				const currentHTML = lines[index].html;
+				const prevHTML = lines[index - 1].html;
+				const prevVisibleText = getVisibleText(prevHTML);
+				const newHTML = prevHTML + currentHTML;
+				setLines(prev => {
+					const updated = [...prev];
+					updated[index - 1].html = newHTML;
+					updated.splice(index, 1);
+					return updated;
+				});
+				requestAnimationFrame(() => {
+					const el = lineRefs.current[prevId];
+					if (el) placeCursorAtOffset(el, prevVisibleText.length);
+				});
+			}
 		}
 		if (e.key === 'Delete') {
-			e.preventDefault();
 			const end = getVisibleText(lines[index].html).length;
 			const below = lineRefs.current[lines[index + 1].id];
 			if (offset === end && below) {
+				e.preventDefault();
 				const newHtml = lines[index].html + lines[index + 1].html;
 				setLines(prev => {
 					const updated = [...prev];
@@ -154,6 +169,16 @@ export const Editor = ({ items }: EditorProps) => {
 			e.preventDefault();
 			const range = document.getSelection()?.getRangeAt(0);
 			if (!range) return;
+			if (!selection.isCollapsed) {
+				const html = lines[index].html
+				const newHtml = html.substring(0, offset);
+				const newLine = { id: nanoid(), html: html.substring(offset), completed: false, indent: lines[index].indent };
+				const updated = [...lines];
+				updated[index].html = newHtml;
+				updated.splice(index + 1, 0, newLine);
+				setLines(updated);
+				return;
+			}
 			const beforeFragment = document.createRange();
 			beforeFragment.setStart(ref, 0);
 			beforeFragment.setEnd(range.startContainer, range.startOffset);
@@ -171,7 +196,7 @@ export const Editor = ({ items }: EditorProps) => {
 				// if pressed enter while current line has no text, move indent back
 				indent = lines[index].indent - 1;
 				// if indent at level 1, pressing enter causes new line below
-				if (indent < 1) { makeNewLine = true; }
+				if (indent < 1) { indent = 1; makeNewLine = true; }
 			} else {
 				// if there is text in current line, make new line with current indent
 				makeNewLine = true;
@@ -196,10 +221,17 @@ export const Editor = ({ items }: EditorProps) => {
 			e.preventDefault();
 			const below = lineRefs.current[lines[index + 1].id];
 			if (below) { placeCursorAtOffset(below, offset); }
+		} else if(e.key === 'ArrowLeft' && offset === 0) {
+			e.preventDefault();
+			const above = lineRefs.current[lines[index - 1].id];
+			if (above) { placeCursorAtOffset(above, getVisibleText(lines[index - 1].html).length); }
+		} else if(e.key === 'ArrowRight' && offset === getVisibleText(lines[index].html).length) {
+			const below = lineRefs.current[lines[index + 1].id];
+			if(below) { placeCursorAtOffset(below, 0);	}
 		}
 	};
 
-	const handlePaste = (id: string, clipboardHtml: string, clipboardText: string) => {
+	/*const handlePaste = (id: string, clipboardHtml: string, clipboardText: string) => {
 		const index = lines.findIndex(line => line.id === id);
 		if (index === -1) return;
 		const items = clipboardText.split(/\r?\n|<li>|<\/li>/g).map(s => s.trim()).filter(s => s);
@@ -215,6 +247,23 @@ export const Editor = ({ items }: EditorProps) => {
 			const el = lineRefs.current[newLines[newLines.length - 1].id];
 			if (el) placeCursorAtOffset(el, getVisibleText(newLines[newLines.length - 1].html).length);
 		});
+	};*/
+
+	const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>, id: string) => {
+		e.preventDefault();
+		const text = e.clipboardData.getData('text/plain');
+		const linesToInsert = text.split(/\r?\n/).filter(line => line.trim() !== '');
+		const index = lines.findIndex(line => line.id === id);
+		const updatedLines = [...lines];
+		const current = updatedLines[index];
+		updatedLines[index] = { ...current, html: linesToInsert[0], };
+		const newLines: EditableLine[] = linesToInsert.slice(1).map((line) => ({ id: nanoid(), html: line, completed: false, indent: 1, order: 0 }));
+		updatedLines.splice(index + 1, 0, ...newLines);
+		setLines(updatedLines);
+		requestAnimationFrame(() => {
+			const el = lineRefs.current[newLines[newLines.length - 1].id];
+			if (el) placeCursorAtOffset(el, getVisibleText(newLines[newLines.length - 1].html).length);
+		});
 	};
 
 	const handleToggle = (id: string) => {
@@ -226,6 +275,13 @@ export const Editor = ({ items }: EditorProps) => {
 	const handleSaveToStorage = (mode: string) => {
 		console.log('save called by', mode);
 		//console.log('instorage,list is', todoList);
+		if (mode === 'interval') {
+			console.log(saveRef)
+			saveRef.current?.oncontextmenu;
+			setTimeout(() => {
+				saveRef?.current?.onclick;
+			}, 1000);
+		}
 		const updated: TodoItem[] = lines.map(line => ({
 			id: line.id,
 			text: line.html,
@@ -263,19 +319,22 @@ export const Editor = ({ items }: EditorProps) => {
 		}
 	}, [todoList, lines]);
 
-	useEffect(() => {
+	/*useEffect(() => {
 		const handleSelectionChange = () => {
-			// deselect select all when deselecting by user
-			const sel = window.getSelection();
-			const container = document.querySelector('#editor');
-			if (!sel || !container || sel.rangeCount === 0) {
+			const selection = document.getSelection();
+			if (!selection || selection.rangeCount === 0) {
 				isSelectAll.current = false;
 				return;
 			}
-			const range = sel.getRangeAt(0);
-			//const isContainerSelected = range.startContainer === container && range.endContainer === container;
-			if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) { isSelectAll.current = false; }
-		}
+			const range = selection.getRangeAt(0);
+			const start = range.startContainer;
+			const end = range.endContainer;
+			const allInside = Object.values(lineRefs.current).some(ref => {
+				return ref && ref.contains(start) && ref.contains(end);
+			});
+			isSelectAll.current = selection.toString().length > 0 && allInside;
+			console.log(isSelectAll.current);
+		};
 		const handleGlobalKeyDown = (e: KeyboardEvent) => {
 			if (e.ctrlKey && e.key.toLowerCase() === 'a') {
 				const activeEl = document.activeElement;
@@ -299,7 +358,7 @@ export const Editor = ({ items }: EditorProps) => {
 			document.removeEventListener('keydown', handleGlobalKeyDown);
 			document.removeEventListener('selectionchange', handleSelectionChange);
 		}
-	}, []);
+	}, []);*/
 
 	useEffect(() => {
 		//console.log('is being updated?', todoList)

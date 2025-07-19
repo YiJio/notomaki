@@ -11,5 +11,5 @@ A simple browser extension/add-on.
 
 **Description:** An add-on to your daily Chrome usage that reminds you of to-dos you need to finish should you choose to open it. Organize your to-dos into tabs and section of notes. Check to-dos complete to remind yourself you completed something.
 
-* Chrome [link]()
+* Chrome [link](https://chromewebstore.google.com/detail/noto-maki/dofbiebjdfiekffglpcgnmnaaphabaob)
 * Firefox [link]()

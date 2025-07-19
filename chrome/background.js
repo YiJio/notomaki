@@ -6,6 +6,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	//console.log('received message: ', request);
 
 	switch (action) {
+		case 'getPatchVersion':
+			console.log('trying to get version', chrome.runtime.getManifest().version);
+			const version = chrome.runtime.getManifest().version;
+			sendResponse({ version });
+			return true;
 		case 'getTodoList':
 			chrome.storage.sync.get(['todoList']).then((result) => {
 				sendResponse({ todoList: result.todoList || {} });
@@ -23,23 +28,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			}*/
 			return true;
 		case 'setTodoList':
-			//console.log('setting to do list', payload.todoList)
+			console.log('setting to do list', payload.todoList)
 			chrome.storage.sync.set({ todoList: payload.todoList }).then(() => {
 				sendResponse({ success: true });
 			}).catch((error) => {
-				console.error('Error getting todos:', error);
+				console.error('Error setting todos:', error);
 				sendResponse({ error: 'Background response: Failed to set todos.' });
 			});
 			return true;
 		default: return false;
 	}
 });
-
-async function addItem(tabId, listId, item) {
-	const { todoList } = await chrome.storage.sync.get((['todoList']));
-	if (todoList && todoList[tabId] && todoList[tabId].lists && todoList[tabId].lists[listId]) {
-		// need to push item in specific order later
-		todoList[tabId].lists[listId].items.push(item);
-		await chrome.storage.sync.set({ todoList });
-	}
-}

@@ -50,7 +50,7 @@ export const Note = () => {
 			</header>
 			<div className={`nm-content__body nm-bg-${activeColor}`}>
 				<div className='nm-note nm-layer'>
-					<EditHeading onChange={(value) => setHeading(value)} onBlur={handleChangeHeading} />
+					<EditHeading defaultValue={todoList?.[activeTab]?.lists?.[activeList].heading} onChange={(value) => setHeading(value)} onBlur={handleChangeHeading} />
 					<Editor items={todoList?.[activeTab]?.lists?.[activeList]?.items} />
 				</div>
 			</div>
