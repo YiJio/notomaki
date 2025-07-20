@@ -1,4 +1,6 @@
 //import React from 'react'
+// utils
+import { getLocalization } from '../../utils';
 // hooks
 import { useModal } from '../../contexts/modal.context';
 import { useTodoList } from '../../contexts/todo.context';
@@ -10,7 +12,7 @@ interface DeleteTabDialogProps {
 
 export const DeleteTabDialog = ({ tabId, tabName }: DeleteTabDialogProps) => {
 	const { closeModal } = useModal();
-	const { todoList, handleUpdate } = useTodoList();
+	const { lang, todoList, handleUpdate } = useTodoList();
 	const hasOnlyOneTab = Object.keys(todoList).length === 1;
 
 	const handleDeleteTab = () => {
@@ -20,20 +22,26 @@ export const DeleteTabDialog = ({ tabId, tabName }: DeleteTabDialogProps) => {
 
 	return (
 		<>
-			<header className='nm-dialog__header'>{hasOnlyOneTab ? <>Uh oh. Cannot roll away!</> : <>Delete "{tabName}"?</>}</header>
+			<header className='nm-dialog__header'>{hasOnlyOneTab ? getLocalization(lang, 'h-delete_to') : <>{getLocalization(lang, 'h-delete', tabName)} Delete "{tabName}"?</>}</header>
 			<div className='nm-dialog__body'>
 				<center>
 					{hasOnlyOneTab ? (<>
-						<strong>You cannot delete your only tab.</strong> Try adding a tab you really want and come back to delete this one to get it out of the way.
+						<strong>{getLocalization(lang, 't-delete_to_label')}</strong> {getLocalization(lang, 't-delete_to_more')}
 					</>) : (<>
-						<strong>Be careful with this action.</strong> Deleting this tab will delete all notes associated with it!!!
+						<strong>{getLocalization(lang, 't-delete_label')}</strong> {getLocalization(lang, 't-delete_tab_more')}
 					</>)}
 				</center>
 			</div>
 			<footer style={{ flexDirection: 'column', gap: '8px' }} className='nm-dialog__footer'>
-				{hasOnlyOneTab ? (<button onClick={closeModal} className='nm-button nm-button--outline nm-hover'>Got it</button>) : (<>
-					<button onClick={handleDeleteTab} className='nm-button nm-button--danger nm-hover'>Yes, delete!!!</button>
-					<button onClick={closeModal} className='nm-button nm-button--danger-outline nm-hover'>No, keep it</button>
+				{hasOnlyOneTab ? (<button onClick={closeModal} className='nm-button nm-button--outline nm-hover'>
+					{getLocalization(lang, 'btn-delete_got')}
+				</button>) : (<>
+					<button onClick={handleDeleteTab} className='nm-button nm-button--danger nm-hover'>
+						{getLocalization(lang, 'btn-delete_yes')}
+					</button>
+					<button onClick={closeModal} className='nm-button nm-button--danger-outline nm-hover'>
+						{getLocalization(lang, 'btn-delete_no')}
+					</button>
 				</>)}
 			</footer>
 		</>

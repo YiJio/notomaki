@@ -22,7 +22,7 @@ interface TabItemProps {
 
 export const TabItem = ({ tabData, currentPage, onMove }: TabItemProps) => {
 	const { openPopup, closePopup } = usePopup();
-	const { activeTab, setActiveTab, setActiveList, tabPopupOpen, setTabPopupOpen, hasUnsaved, todoList, getFirstListId, handleSaveToStorage, handleUpdate } = useTodoList();
+	const { activeTab, setActiveTab, setActiveList, tabPopupOpen, setTabPopupOpen, hasUnsaved, todoList, getRecentListId, handleSaveToStorage, handleUpdate } = useTodoList();
 	const tabRef = useRef<HTMLButtonElement | null>(null);
 
 	const handleContextMenu = (e: React.MouseEvent) => {
@@ -30,7 +30,7 @@ export const TabItem = ({ tabData, currentPage, onMove }: TabItemProps) => {
 		if (hasUnsaved) { handleSaveToStorage('tab contextmenu'); }
 		setTimeout(() => {
 			setActiveTab(tabData.id);
-			setActiveList(getFirstListId(tabData.id));
+			setActiveList(getRecentListId(tabData.id));
 			setTabPopupOpen(tabData.id);
 			//const x = e.clientX;
 			//const y = e.clientY;
@@ -47,7 +47,7 @@ export const TabItem = ({ tabData, currentPage, onMove }: TabItemProps) => {
 		if (hasUnsaved) { handleSaveToStorage('tab change'); }
 		setTimeout(() => {
 			setActiveTab(tabData.id);
-			setActiveList(getFirstListId(tabData.id));
+			setActiveList(getRecentListId(tabData.id));
 		}, 200);
 	}
 

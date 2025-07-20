@@ -8,7 +8,7 @@ import { PopupProvider } from './contexts/popup.context';
 // hooks
 import { useTodoList } from './contexts/todo.context';
 // utils
-import { getFromIndex } from './utils';
+import { getDateTimeNow, getFromIndex } from './utils';
 // components
 import { Copy, Header, Note, TabList, Toolbox } from './components';
 import { ActionsButton } from './components/buttons';
@@ -17,17 +17,12 @@ import { NOTE_TYPES } from './constants';
 
 function App() {
 	const [datetime, setDatetime] = useState<string>('');
-	const { activeTab, activeList, todoList, isLoading, error } = useTodoList();
+	const { lang, activeTab, activeList, todoList, isLoading, error } = useTodoList();
 	const activeNote = todoList?.[activeTab]?.lists?.[activeList]?.note;
 	const noteShort = getFromIndex(NOTE_TYPES, 'key', activeNote)?.short;
 
 	function updateTime() {
-		const now = new Date();
-		const options: any = {
-			year: 'numeric', month: '2-digit', day: '2-digit',
-			hour: '2-digit', minute: '2-digit'
-		};
-		const formattedTime = now.toLocaleString('en-US', options).replaceAll('/', '.').replace(',', '');
+		const formattedTime = getDateTimeNow(lang);
 		setDatetime(formattedTime);
 	}
 

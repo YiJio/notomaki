@@ -36,6 +36,9 @@
 
 	/* FONT FAMILIES -------------------- */
 	--font-title:'Zen Kurenaido', sans-serif;
+	--font-title-ja:'Zen Kurenaido', sans-serif;
+	--font-title-en:'Mynerve', sans-serif;
+	--font-title-zh:'LXGW WenKai TC', sans-serif;
 	--font-body:'Zen Maru Gothic', sans-serif;
 	--font-tip:'Mynerve', sans-serif;
 

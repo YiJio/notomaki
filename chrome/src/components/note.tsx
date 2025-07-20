@@ -1,19 +1,24 @@
 // packages
 import { useEffect, useRef, useState } from 'react';
+// utils
+import { getDateTime, getLocalization } from '../utils';
 // hooks
 import { useTodoList } from '../contexts/todo.context';
 // components
-import { EditHeading } from './edit-heading';
 import { Editor } from './editor';
-import { NavNoteButton } from './buttons';
-import { NoteMenuButton } from './buttons/note-menu-button';
+import { NavNoteButton, NoteMenuButton } from './buttons';
+// constants
+import { LAST_PATCH_TIMESTAMP } from '../constants';
 
 export const Note = () => {
-	const { activeTab, activeList, todoList, handleUpdate } = useTodoList();
-	const textRef = useRef<HTMLTextAreaElement>(null);
+	const { lang, activeTab, activeList, todoList, handleUpdate } = useTodoList();
+	const nameRef = useRef<HTMLTextAreaElement>(null);
+	const headingRef = useRef<HTMLTextAreaElement>(null);
 	const [listName, setListName] = useState<string>(todoList?.[activeTab]?.lists?.[activeList]?.name);
 	const [heading, setHeading] = useState<string>(todoList?.[activeTab]?.lists?.[activeList]?.heading);
 	const activeColor = todoList?.[activeTab]?.color;
+	const lastUpdated = todoList?.[activeTab]?.lists?.[activeList]?.updated || LAST_PATCH_TIMESTAMP;
+	const lastUpdatedDate = getDateTime(lang, lastUpdated);
 
 	const handleRenameList = () => {
 		handleUpdate('renameList', { tabId: activeTab, listId: activeList, newName: listName });
@@ -27,16 +32,27 @@ export const Note = () => {
 		if (activeTab && activeList) {
 			const newName: string = todoList?.[activeTab].lists?.[activeList].name;
 			setListName(newName);
+			const newHeading: string = todoList?.[activeTab].lists?.[activeList].heading;
+			setHeading(newHeading);
+			//console.log(todoList, todoList?.[activeTab], 'listname', newName, 'heading', newHeading)
 		}
 	}, [activeTab, activeList]);
 
 	useEffect(() => {
-		if (textRef.current) {
-			textRef.current.style.height = '20px';
-			const scrollHeight = textRef.current.scrollHeight;
-			textRef.current.style.height = `${scrollHeight}px`;
+		if (nameRef.current) {
+			nameRef.current.style.height = '20px';
+			const scrollHeight = nameRef.current.scrollHeight;
+			nameRef.current.style.height = `${scrollHeight}px`;
 		}
-	}, [textRef.current, listName]);
+	}, [nameRef.current, listName]);
+
+	useEffect(() => {
+		if (headingRef.current) {
+			headingRef.current.style.height = '32px';
+			const scrollHeight = headingRef.current.scrollHeight;
+			headingRef.current.style.height = `${scrollHeight}px`;
+		}
+	}, [headingRef.current, heading]);
 
 	return (
 		<div className='nm-content'>
@@ -46,14 +62,14 @@ export const Note = () => {
 				<div className='nm-content__title'>
 					<strong className='nm-content__tab nm-layer'>{todoList?.[activeTab]?.name}</strong>
 					/
-					<textarea ref={textRef} className='nm-content__input nm-layer' value={listName} onChange={(e) => setListName(e.target.value)} onBlur={handleRenameList} maxLength={100} placeholder='Untitled note' />
+					<textarea ref={nameRef} className='nm-content__input nm-layer' value={listName} onChange={(e) => setListName(e.target.value)} onBlur={handleRenameList} maxLength={100} placeholder={getLocalization(lang, 't-untitled_note_ph')} />
 				</div>
 				<NavNoteButton direction='right' />
 			</header>
 			<div className={`nm-content__body nm-bg-${activeColor}`}>
 				<div className='nm-note nm-layer'>
-					<div className='nm-note__updated'>Last updated: {todoList?.[activeTab]?.lists?.[activeList].updated}</div>
-					<EditHeading defaultValue={todoList?.[activeTab]?.lists?.[activeList].heading} onChange={(value) => setHeading(value)} onBlur={handleChangeHeading} />
+					<div className='nm-note__updated'>{getLocalization(lang, 't-last_updated')}{lastUpdatedDate}</div>
+					<textarea ref={headingRef} className='nm-note__heading' value={heading} onChange={(e) => setListName(e.target.value)} onBlur={handleChangeHeading} placeholder={getLocalization(lang, 't-untitled_heading_ph')} />
 					<Editor items={todoList?.[activeTab]?.lists?.[activeList]?.items} />
 				</div>
 			</div>

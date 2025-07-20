@@ -1,4 +1,6 @@
 //import React from 'react'
+// utils
+import { getLocalization } from '../../utils';
 // hooks
 import { useModal } from '../../contexts/modal.context';
 import { useTodoList } from '../../contexts/todo.context';
@@ -6,7 +8,7 @@ import { useTodoList } from '../../contexts/todo.context';
 
 export const DeleteListDialog = () => {
 	const { closeModal } = useModal();
-	const { activeTab, activeList, todoList, handleUpdate } = useTodoList();
+	const { lang, activeTab, activeList, todoList, handleUpdate } = useTodoList();
 	const hasOnlyOneList = Object.keys(todoList?.[activeTab]?.lists).length === 1;
 	const listName = todoList?.[activeTab]?.lists?.[activeList].name;
 
@@ -17,20 +19,26 @@ export const DeleteListDialog = () => {
 
 	return (
 		<>
-			<header className='nm-dialog__header'>{hasOnlyOneList ? <>Stop right there!</> : <>Delete "{listName}"?</>}</header>
+			<header className='nm-dialog__header'>{hasOnlyOneList ? getLocalization(lang, 'h-delete_no') : <>{getLocalization(lang, 'h-delete', listName)} Delete "{listName}"?</>}</header>
 			<div className='nm-dialog__body'>
 				<center>
 					{hasOnlyOneList ? (<>
-						<strong>You cannot delete your only note in this tab.</strong> Try adding a note you really want and come back to delete this one to get it out of the way.
+						<strong>{getLocalization(lang, 't-delete_no_label')}</strong> {getLocalization(lang, 't-delete_no_more')}
 					</>) : (<>
-						<strong>Be careful with this action.</strong>
+						<strong>{getLocalization(lang, 't-delete_label')}</strong>
 					</>)}
 				</center>
 			</div>
 			<footer className='nm-dialog__footer'>
-				{hasOnlyOneList ? (<button onClick={closeModal} className='nm-button nm-button--outline nm-hover'>Got it</button>) : (<>
-					<button onClick={handleDeleteList} className='nm-button nm-button--danger nm-hover'>Yes, delete!!!</button>
-					<button onClick={closeModal} className='nm-button nm-button--danger-outline nm-hover'>No, keep it</button>
+				{hasOnlyOneList ? (<button onClick={closeModal} className='nm-button nm-button--outline nm-hover'>
+					{getLocalization(lang, 'btn-delete_got')}
+				</button>) : (<>
+					<button onClick={handleDeleteList} className='nm-button nm-button--danger nm-hover'>
+						{getLocalization(lang, 'btn-delete_yes')}
+					</button>
+					<button onClick={closeModal} className='nm-button nm-button--danger-outline nm-hover'>
+						{getLocalization(lang, 'btn-delete_no')}
+					</button>
 				</>)}
 			</footer>
 		</>

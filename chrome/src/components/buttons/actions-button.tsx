@@ -1,6 +1,8 @@
 // hooks
 import { useModal } from '../../contexts/modal.context';
 import { useTodoList } from '../../contexts/todo.context';
+// utils
+import { getLocalization } from '../../utils';
 // components
 import { DeleteListDialog } from '../dialogs';
 
@@ -9,7 +11,7 @@ interface ActionsButtonProps {
 }
 
 export const ActionsButton = ({ type }: ActionsButtonProps) => {
-	const { activeTab, handleUpdate } = useTodoList();
+	const { lang, activeTab, handleUpdate } = useTodoList();
 	const { openModal } = useModal();
 
 	const handleAction = () => {
@@ -19,7 +21,7 @@ export const ActionsButton = ({ type }: ActionsButtonProps) => {
 
 	return (
 		<button onClick={handleAction} className='nm-hover'>
-			{type === 'add' ? 'New note' : 'Delete note'}
+			{type === 'add' ? getLocalization(lang, 'btn-note_new') : getLocalization(lang, 'btn-note_delete')}
 			<img src={`assets/icon-${type}.png`} style={{ filter: 'invert(1)' }} />
 		</button>
 	);

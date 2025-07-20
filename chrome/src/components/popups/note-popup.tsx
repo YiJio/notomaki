@@ -1,29 +1,18 @@
-// packages
-//import { useState } from 'react';
 // hooks
 import { usePopup } from '../../contexts/popup.context';
 import { useTodoList } from '../../contexts/todo.context';
 // components
+import { PopupOption } from '../popup-option';
 
 export const NotePopup = () => {
 	const { closePopup } = usePopup();
-	const { activeTab, activeList, todoList, setActiveList } = useTodoList();
-	const activeColor = todoList?.[activeTab]?.color;
+	const { activeTab, todoList } = useTodoList();
 	const lists = Object.entries(todoList?.[activeTab]?.lists).map(([id, data]) => ({ id, name: data.name, updated: data.updated }));
-
-	const handleClick = (listId: string) => {
-		setActiveList(listId);
-		closePopup();
-	}
 
 	return (
 		<>
 			{lists.map((list) => (
-				<div key={list.id} onClick={() => handleClick(list.id)} className={`nm-popup__option${activeList === list.id ? ' active' : ''}`}>
-					<strong>{list.name}</strong>
-					<span>{list.updated}</span>
-					<div className={`nm-popup__overlay nm-mg-${activeColor}`} />
-				</div>
+				<PopupOption key={list.id} listId={list.id} listName={list.name} listDate={list.updated} onClose={closePopup} />
 			))}
 		</>
 	);

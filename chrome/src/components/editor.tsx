@@ -84,7 +84,7 @@ export const Editor = ({ items }: EditorProps) => {
 		// if new line, make new line and save
 		// or if changes have been made to the line, save it
 		if(index === -1 || items[index]?.text !== html) {
-			console.log(lines);
+			//console.log(lines);
 			setHasUnsaved(false);
 			handleSaveToStorage('blur');
 		}
@@ -121,7 +121,7 @@ export const Editor = ({ items }: EditorProps) => {
 			if (offset === 0) {
 				// make indentation only when at front of line
 				e.preventDefault();
-				console.log('current indent:', lines[index].indent)
+				//console.log('current indent:', lines[index].indent)
 				const prev = [...lines];
 				prev[index].indent = Math.min(prev[index].indent + 1, 5);
 				//setLines(prev => prev.map((line, i) => i === index ? { ...line, indent: Math.min(line.indent + 1, 5) } : line));
@@ -264,24 +264,6 @@ export const Editor = ({ items }: EditorProps) => {
 		}
 	};
 
-	/*const handlePaste = (id: string, clipboardHtml: string, clipboardText: string) => {
-		const index = lines.findIndex(line => line.id === id);
-		if (index === -1) return;
-		const items = clipboardText.split(/\r?\n|<li>|<\/li>/g).map(s => s.trim()).filter(s => s);
-		if (items.length <= 1) return;
-		console.log(clipboardHtml);
-		const newLines: EditableLine[] = items.map(text => ({ id: nanoid(), html: text, completed: false, indent: 1 }));
-		setLines(prev => {
-			const updated = [...prev];
-			updated.splice(index, 1, ...newLines);
-			return updated;
-		});
-		requestAnimationFrame(() => {
-			const el = lineRefs.current[newLines[newLines.length - 1].id];
-			if (el) placeCursorAtOffset(el, getVisibleText(newLines[newLines.length - 1].html).length);
-		});
-	};*/
-
 	const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>, id: string) => {
 		e.preventDefault();
 		const text = e.clipboardData.getData('text/plain');
@@ -398,10 +380,6 @@ export const Editor = ({ items }: EditorProps) => {
 			document.removeEventListener('selectionchange', handleSelectionChange);
 		}
 	}, []);*/
-
-	useEffect(() => {
-		//console.log('is being updated?', todoList)
-	}, [todoList]);
 
 	useEffect(() => {
 		if (items) {

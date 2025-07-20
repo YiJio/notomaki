@@ -13,9 +13,9 @@ export const NavNoteButton = ({ direction }: NavNoteButtonProps) => {
 
 	useEffect(() => {
 		if (todoList && activeTab) {
-			//console.log(todoList, activeTab);
-			//console.log(todoList[activeTab].lists);
-			setNumLists(Object.keys(todoList[activeTab].lists).length);
+			//console.log('todos,tab',todoList, activeTab);
+			//console.log('lists',todoList[activeTab].lists);
+			setNumLists(Object.keys(todoList?.[activeTab]?.lists).length);
 		}
 	}, [todoList, activeTab]);
 
